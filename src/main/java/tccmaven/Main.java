@@ -42,9 +42,13 @@ public class Main {
                 Log.loga("Serão calculados os indicadores");
                 Indicadores indicadores = new Indicadores(parametros);
                 indicadores.calculaIndicadores();
+                //Atualiza parâmetros com a inclusão dos indicadores
+                parametros = indicadores.getParametros();
                 
                 
-
+                
+                //Filtro
+                //TODO: Eliminar dados redundantes e etc
                 
 
                 //Criar arquivo ARFF
@@ -53,7 +57,7 @@ public class Main {
                 geraArquivoARFF.geraArquivo();
 
             }
-        } catch (BaixaArquivoException | ImportadorException | GeraArquivoARFFException ex) {
+        } catch (ParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException ex) {
             System.out.println(ex.getMessage());
         }
     }
