@@ -1,0 +1,47 @@
+% This is a dataset obtained from the YAHOO FINANCES. Here is the included description:
+%
+% The data provided are daily stock prices from 01/01/2015 through 31/12/2015, for AGRO3.SA.
+%
+% Source: collection of regression datasets by Jean Felipe Hartz (jeanrsbr@gmail.com) at
+% http://real-chart.finance.yahoo.com 
+
+
+@relation stock
+
+@attribute AGRO3.SAClosePrice numeric
+@attribute AGRO3.SAHighPrice numeric
+@attribute AGRO3.SALowPrice numeric
+@attribute AGRO3.SAMA5 numeric
+@attribute AGRO3.SAOpenPrice numeric
+@attribute AGRO3.SARSI numeric
+@attribute AGRO3.SAVolume numeric
+@attribute LNDClosePrice numeric
+@attribute LNDHighPrice numeric
+@attribute LNDLowPrice numeric
+@attribute LNDMA5 numeric
+@attribute LNDOpenPrice numeric
+@attribute LNDRSI numeric
+@attribute LNDVolume numeric
+
+@data
+
+1.3,1.5,0.4,1.3,1,0,5000,1.3,1.5,0.4,1.3,1,0,5000
+2.3,2.5,1.4,1.8,2,0,5000,2.3,2.5,1.4,1.8,2,0,5000
+3.3,3.5,2.4,2.3,3,0,5000,3.3,3.5,2.4,2.3,3,0,5000
+4.3,4.5,3.4,2.8,4,0,5000,4.3,4.5,3.4,2.8,4,0,5000
+5.3,5.5,4.4,3.3,5,0,4000,5.3,5.5,4.4,3.3,5,0,4000
+6.3,6.5,5.4,4.3,6,0,4000,6.3,6.5,5.4,4.3,6,0,4000
+7.3,7.5,6.4,5.3,7,0,4000,7.3,7.5,6.4,5.3,7,0,4000
+8.3,8.5,7.4,6.3,8,0,4000,8.3,8.5,7.4,6.3,8,0,4000
+9.3,9.5,8.4,7.3,9,0,3000,9.3,9.5,8.4,7.3,9,0,3000
+10.3,10.5,9.4,8.3,10,0,3000,10.3,10.5,9.4,8.3,10,0,3000
+11.3,11.5,10.4,9.3,11,0,3000,11.3,11.5,10.4,9.3,11,0,3000
+12.3,12.5,11.4,10.3,12,0,3000,12.3,12.5,11.4,10.3,12,0,3000
+13.3,13.5,12.4,11.3,13,0,2000,13.3,13.5,12.4,11.3,13,0,2000
+14.3,14.5,13.4,12.3,14,0,2000,14.3,14.5,13.4,12.3,14,0,2000
+15.3,15.5,14.4,13.3,15,0,2000,15.3,15.5,14.4,13.3,15,0,2000
+16.3,16.5,15.4,14.3,16,0,2000,16.3,16.5,15.4,14.3,16,0,2000
+17.3,17.5,16.4,15.3,17,0,1000,17.3,17.5,16.4,15.3,17,0,1000
+18.3,18.5,17.4,16.3,18,0,1000,18.3,18.5,17.4,16.3,18,0,1000
+19.3,19.5,18.4,17.3,19,0,1000,19.3,19.5,18.4,17.3,19,0,1000
+20.3,20.5,19.4,18.3,20,0,1000,20.3,20.5,19.4,18.3,20,0,1000

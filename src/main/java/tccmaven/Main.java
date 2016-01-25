@@ -53,12 +53,13 @@ public class Main {
 
                 //Criar arquivo ARFF
                 Log.loga("Será gerado o arquivo ARFF");
-                GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(null, ativos[i]);
+                GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(parametros);
                 geraArquivoARFF.geraArquivo();
 
             }
         } catch (ParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException ex) {
             System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }

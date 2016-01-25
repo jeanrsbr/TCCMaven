@@ -53,8 +53,17 @@ public class Importador {
                 //Adiciona o tick
                 ticks.add(new Tick(new DateTime(formatter.parse(line[0])), Double.parseDouble(line[1]), Double.parseDouble(line[2]), Double.parseDouble(line[3]), Double.parseDouble(line[4]), Double.parseDouble(line[5])));
             }
-
-            return new TimeSeries(ativo, ticks);
+            
+//          TODO: GAMBIARRA
+            List<Tick> ticksInv = new ArrayList<>();
+            
+            for (int i = ticks.size() - 1; i >= 0; i--) {
+                //Inverte a ordem do Array de Ticks
+                ticksInv.add(ticks.get(i));                
+            }
+            
+            
+            return new TimeSeries(ativo, ticksInv);
         } catch (IOException | ParseException ex) {
             throw new ImportadorException("Ocorreu um erro no momento de importar o arquivo CSV", ex);
         }

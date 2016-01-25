@@ -54,6 +54,7 @@ public class Indicadores {
     private void calculaMediaMovelClosePrice(TimeSeries timeSeries, int periodos) {
         ClosePriceIndicator closePrice = new ClosePriceIndicator(timeSeries);
         SMAIndicator smaIndicator = new SMAIndicator(closePrice, periodos);
+        
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
             parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "MA5", smaIndicator.getValue(i).toDouble());
