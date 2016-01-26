@@ -36,7 +36,7 @@ public class Importador {
             BufferedReader br = baixaArquivo.downloadArquivo();
 
             
-            List<Tick> ticks = new ArrayList<Tick>();
+            List<Tick> ticks = new ArrayList<>();
 
             //Descarta a primeira linha
             br.readLine();
@@ -50,6 +50,12 @@ public class Importador {
                 }
                 String[] line = linha.split(",");
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                
+                //Se não possui volume de transação (Feriados)
+                if (Double.parseDouble(line[5]) == 0d){
+                    continue;
+                }
+                
                 //Adiciona o tick
                 ticks.add(new Tick(new DateTime(formatter.parse(line[0])), Double.parseDouble(line[1]), Double.parseDouble(line[2]), Double.parseDouble(line[3]), Double.parseDouble(line[4]), Double.parseDouble(line[5])));
             }
