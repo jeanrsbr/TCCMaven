@@ -50,16 +50,20 @@ public class Indicadores {
 
 //        TODO: Configurar no PROPRIERTIES os períodos os indicadores
 
-        
+
         calculaMediaMovel(timeSeries, 5);
         calculaIndiceForçaRelativa(timeSeries, 14);
         calculaIndiceStochasticOscilatorKD(timeSeries, 14);
         calculaIndiceOnBalanceVolume(timeSeries);
         calculaIndiceMACD(timeSeries, 12, 26);
+        calculaIndicePVT(timeSeries);
         //TODO: Achar o período mais comum
-        calculaIndiceWR(timeSeries, 14); 
+        calculaIndiceWR(timeSeries, 14);
         //TODO: Achar o período mais comum
         calculaIndiceROC(timeSeries, 14);
+        //TODO: Achar o período mais comum
+        calculaIndiceMomentum(timeSeries, 14);
+        
     }
 
     //Cálcula média móvel para 5 períodos
@@ -126,8 +130,20 @@ public class Indicadores {
 
     //Calcula o índice Momentum
     private void calculaIndiceMomentum(TimeSeries timeSeries, int periodo) {
-        
-        
+
+        //Varre a série temporal
+        for (int i = 0; i < timeSeries.getTickCount(); i++) {
+
+            //Se estiver no inicio da série temporal
+            if (periodo > i) {
+                continue;
+            }
+            //CLOSE n - CLOSE n-p
+            Double momentum = timeSeries.getTick(i).getClosePrice().toDouble() - timeSeries.getTick(i - periodo).getClosePrice().toDouble();
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum", momentum);
+        }
+
+
     }
 
     //Calcula o índice Price Rate Of Change
@@ -142,7 +158,31 @@ public class Indicadores {
     }
 
     //Calcula o índice Price Volume Trend
-    private void calculaIndicePVT(TimeSeries timeSeries, int periodo) {
+    private void calculaIndicePVT(TimeSeries timeSeries) {
+
+        Double pVTAnterior = 0d;
+        //Varre a série temporal
+        for (int i = 0; i < timeSeries.getTickCount(); i++) {
+            //Se estiver na primeira ocorrência
+            if (i == 0) {
+                continue;
+            }
+            //Preço de fechamento atual
+            Double closePrice = timeSeries.getTick(i).getClosePrice().toDouble();
+            //Preço de fechamento anterior
+            Double closePriceAnt = timeSeries.getTick(i - 1).getClosePrice().toDouble();
+            //Volume atual
+            Double volume = timeSeries.getTick(i).getVolume().toDouble();
+            //VPTprev + Volume x ((CloseN - CloseN-1) / CloseN-1) 
+            Double pVT = pVTAnterior + volume * ((closePrice - closePriceAnt) / closePriceAnt);
+
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PVT", pVT);
+            //Atualiza pVTAnterior
+            pVTAnterior = pVT;
+        }
+
+        
+        //Calcula o índice BIAS
         
     }
 }
