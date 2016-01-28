@@ -9,21 +9,21 @@ package tccmaven;
  * @author Jean-NoteI5
  */
 public class Parametro {
-    
-    private String Descrição;
+
+    private String descricao;
     private double valor;
 
-    public Parametro(String Descrição, double valor) {
-        this.Descrição = Descrição;
+    public Parametro(String descricao, double valor) {
+        this.descricao = descricao;
         this.valor = valor;
     }
 
-    public String getDescrição() {
-        return Descrição;
+    public String getDescricao() {
+        return descricao;
     }
 
-    public void setDescrição(String Descrição) {
-        this.Descrição = Descrição;
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
     }
 
     public double getValor() {

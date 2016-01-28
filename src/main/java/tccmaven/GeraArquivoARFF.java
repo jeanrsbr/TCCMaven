@@ -99,7 +99,7 @@ public class GeraArquivoARFF {
                     //Varre os parâmetros existentes
                     for (int i = 0; i < aux.size(); i++) {
                         //Se for parâmetro correto
-                        if (aux.get(i).getDescrição().equals(nomeParametro)) {
+                        if (aux.get(i).getDescricao().equals(nomeParametro)) {
                             /* 
                              * Realiza a formatação do número para evitar que ele seja representado 
                              * como notação cientifica quando o seu valor for muito grande

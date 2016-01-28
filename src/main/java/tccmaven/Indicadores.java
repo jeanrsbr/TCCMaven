@@ -8,8 +8,7 @@ import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.oscillators.StochasticOscillatorDIndicator;
 import eu.verdelhan.ta4j.indicators.oscillators.StochasticOscillatorKIndicator;
 import eu.verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
-import eu.verdelhan.ta4j.indicators.simple.PriceVariationIndicator;
-import eu.verdelhan.ta4j.indicators.simple.VolumeIndicator;
+import eu.verdelhan.ta4j.indicators.trackers.AverageDirectionalMovementIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.MACDIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.ROCIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.RSIIndicator;
@@ -17,7 +16,6 @@ import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.WilliamsRIndicator;
 import eu.verdelhan.ta4j.indicators.volume.OnBalanceVolumeIndicator;
 import java.util.ArrayList;
-import javax.swing.text.Position;
 
 /**
  *
@@ -48,62 +46,63 @@ public class Indicadores {
     //Calcula indicadores da série temporal
     private void calculaIndicadoresSerie(TimeSeries timeSeries) {
 
-//        TODO: Configurar no PROPRIERTIES os períodos os indicadores
+        calculaSMA(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.SMA")));
+        calculaIFR(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.IFR")));
+        calculaStochasticOscilatorKD(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.StochasticOscilatorKD")));
+        calculaOnBalanceVolume(timeSeries);
+        calculaMACD(timeSeries, 12, 26);
+        calculaPVT(timeSeries);
+        //TODO: Achar o período mais comum
+        calculaWillianR(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.WillianR")));
+        //TODO: Achar o período mais comum
+        calculaROC(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.ROC")));
+        //TODO: Achar o período mais comum
+        calculaMomentum(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.Momentum")));
+        //TODO: Achar o período mais comum
+        calculaBIAS(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.BIAS")));
+        //TODO: Achar o período mais comum
+        calculaADMI(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.ADMI")));
 
-
-        calculaMediaMovel(timeSeries, 5);
-        calculaIndiceForçaRelativa(timeSeries, 14);
-        calculaIndiceStochasticOscilatorKD(timeSeries, 14);
-        calculaIndiceOnBalanceVolume(timeSeries);
-        calculaIndiceMACD(timeSeries, 12, 26);
-        calculaIndicePVT(timeSeries);
-        //TODO: Achar o período mais comum
-        calculaIndiceWR(timeSeries, 14);
-        //TODO: Achar o período mais comum
-        calculaIndiceROC(timeSeries, 14);
-        //TODO: Achar o período mais comum
-        calculaIndiceMomentum(timeSeries, 14);
-        
     }
 
     //Cálcula média móvel para 5 períodos
-    private void calculaMediaMovel(TimeSeries timeSeries, int periodos) {
+    private void calculaSMA(TimeSeries timeSeries, int periodo) {
         ClosePriceIndicator closePrice = new ClosePriceIndicator(timeSeries);
-        SMAIndicator smaIndicator = new SMAIndicator(closePrice, periodos);
+        SMAIndicator smaIndicator = new SMAIndicator(closePrice, periodo);
 
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "MA5", smaIndicator.getValue(i).toDouble());
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "MA" + periodo, smaIndicator.getValue(i).toDouble());
         }
     }
 
     //Calcula o índice de força relativa
-    private void calculaIndiceForçaRelativa(TimeSeries timeSeries, int periodos) {
+    private void calculaIFR(TimeSeries timeSeries, int periodo) {
         ClosePriceIndicator closePrice = new ClosePriceIndicator(timeSeries);
-        RSIIndicator rsiIndicator = new RSIIndicator(closePrice, periodos);
+        RSIIndicator rsiIndicator = new RSIIndicator(closePrice, periodo);
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "RSI", rsiIndicator.getValue(i).toDouble());
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "RSI" + periodo, rsiIndicator.getValue(i).toDouble());
         }
 
     }
     //Calcula o índice Stochastic Oscilator K & D
 
-    private void calculaIndiceStochasticOscilatorKD(TimeSeries timeSeries, int periodos) {
+    private void calculaStochasticOscilatorKD(TimeSeries timeSeries, int periodo) {
 
-        StochasticOscillatorKIndicator soki = new StochasticOscillatorKIndicator(timeSeries, periodos);
+        StochasticOscillatorKIndicator soki = new StochasticOscillatorKIndicator(timeSeries, periodo);
         StochasticOscillatorDIndicator sodi = new StochasticOscillatorDIndicator(soki);
 
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SOKI", soki.getValue(i).toDouble());
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SODI", sodi.getValue(i).toDouble());
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SOKI" + periodo, soki.getValue(i).toDouble());
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SODI" + periodo, sodi.getValue(i).toDouble());
         }
 
     }
 
     //Calcula o índice On Balance Volume
-    private void calculaIndiceOnBalanceVolume(TimeSeries timeSeries) {
+    private void calculaOnBalanceVolume(TimeSeries timeSeries) {
         OnBalanceVolumeIndicator onBalanceVolume = new OnBalanceVolumeIndicator(timeSeries);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
             parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "OBV", onBalanceVolume.getValue(i).toDouble());
@@ -111,7 +110,7 @@ public class Indicadores {
     }
 
     //Calcula o índice MACD
-    private void calculaIndiceMACD(TimeSeries timeSeries, int periodoCurto, int periodoLongo) {
+    private void calculaMACD(TimeSeries timeSeries, int periodoCurto, int periodoLongo) {
         ClosePriceIndicator closePrice = new ClosePriceIndicator(timeSeries);
         MACDIndicator mACD = new MACDIndicator(closePrice, periodoCurto, periodoLongo);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
@@ -120,16 +119,16 @@ public class Indicadores {
     }
 
     //Calcula o índice Willians %R
-    private void calculaIndiceWR(TimeSeries timeSeries, int periodo) {
+    private void calculaWillianR(TimeSeries timeSeries, int periodo) {
 
         WilliamsRIndicator williamsRIndicator = new WilliamsRIndicator(timeSeries, periodo);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "WR", williamsRIndicator.getValue(i).toDouble());
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "WR" + periodo, williamsRIndicator.getValue(i).toDouble());
         }
     }
 
     //Calcula o índice Momentum
-    private void calculaIndiceMomentum(TimeSeries timeSeries, int periodo) {
+    private void calculaMomentum(TimeSeries timeSeries, int periodo) {
 
         //Varre a série temporal
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
@@ -140,25 +139,25 @@ public class Indicadores {
             }
             //CLOSE n - CLOSE n-p
             Double momentum = timeSeries.getTick(i).getClosePrice().toDouble() - timeSeries.getTick(i - periodo).getClosePrice().toDouble();
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum", momentum);
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum" + periodo, momentum);
         }
 
 
     }
 
     //Calcula o índice Price Rate Of Change
-    private void calculaIndiceROC(TimeSeries timeSeries, int periodo) {
+    private void calculaROC(TimeSeries timeSeries, int periodo) {
 
         ClosePriceIndicator closePrice = new ClosePriceIndicator(timeSeries);
         ROCIndicator rOCIndicator = new ROCIndicator(closePrice, periodo);
 
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PROC", rOCIndicator.getValue(i).toDouble());
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PROC" + periodo, rOCIndicator.getValue(i).toDouble());
         }
     }
 
     //Calcula o índice Price Volume Trend
-    private void calculaIndicePVT(TimeSeries timeSeries) {
+    private void calculaPVT(TimeSeries timeSeries) {
 
         Double pVTAnterior = 0d;
         //Varre a série temporal
@@ -180,9 +179,31 @@ public class Indicadores {
             //Atualiza pVTAnterior
             pVTAnterior = pVT;
         }
+    }
 
+    //Calcula o índice BIAS
+    private void calculaBIAS(TimeSeries timeSeries, int periodo) {
         
-        //Calcula o índice BIAS
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(timeSeries);
+        SMAIndicator sMAIndicator = new SMAIndicator(closePriceIndicator, periodo);
+        
+        //Varre a série temporal
+        for (int i = 0; i < timeSeries.getTickCount(); i++) {
+            Double closePrice = timeSeries.getTick(i).getClosePrice().toDouble();
+            Double sMA = sMAIndicator.getValue(i).toDouble();
+            Double bIAS = ((closePrice - sMA) / sMA) * 100;
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "BIAS" + periodo, bIAS);
+        }
+    }
+    
+    
+    private void calculaADMI(TimeSeries timeSeries, int periodo) {
+        
+        AverageDirectionalMovementIndicator admi = new AverageDirectionalMovementIndicator(timeSeries, periodo);
+        //Varre a série temporal
+        for (int i = 0; i < timeSeries.getTickCount(); i++) {
+            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "ADMI" + periodo, admi.getValue(i).toDouble());
+        }
         
     }
 }
