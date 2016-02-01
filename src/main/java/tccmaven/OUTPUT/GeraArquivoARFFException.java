@@ -2,23 +2,23 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven;
+package tccmaven.OUTPUT;
 
 /**
  *
  * @author Jean-NoteI5
  */
-public class ParametrosException extends Exception {
+public class GeraArquivoARFFException extends Exception {
 
-    public ParametrosException(String message) {
+    public GeraArquivoARFFException(String message) {
         super(message);
     }
 
-    public ParametrosException(String message, Throwable cause) {
+    public GeraArquivoARFFException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public ParametrosException(Throwable cause) {
+    public GeraArquivoARFFException(Throwable cause) {
         super(cause);
     }
     

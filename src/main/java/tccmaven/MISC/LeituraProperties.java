@@ -2,7 +2,7 @@
  * TCC
  * CopyRight Rech Informática Ltda. Todos os direitos reservados.
  */
-package tccmaven;
+package tccmaven.MISC;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

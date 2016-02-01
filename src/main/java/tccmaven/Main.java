@@ -4,6 +4,16 @@
  */
 package tccmaven;
 
+import tccmaven.MISC.LeituraProperties;
+import tccmaven.DATA.Parametros;
+import tccmaven.DATA.Indicadores;
+import tccmaven.DATA.ParametrosException;
+import tccmaven.IMPORT.Importador;
+import tccmaven.IMPORT.BaixaArquivoException;
+import tccmaven.IMPORT.ImportadorException;
+import tccmaven.MISC.Log;
+import tccmaven.OUTPUT.GeraArquivoARFFException;
+import tccmaven.OUTPUT.GeraArquivoARFF;
 import java.io.IOException;
 
 

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven;
+package tccmaven.OUTPUT;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,6 +14,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import tccmaven.MISC.LeituraProperties;
+import tccmaven.MISC.Log;
+import tccmaven.DATA.Parametro;
+import tccmaven.DATA.Parametros;
 
 /**
  *

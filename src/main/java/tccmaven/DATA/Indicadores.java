@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven;
+package tccmaven.DATA;
 
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.oscillators.StochasticOscillatorDIndicator;
@@ -16,6 +16,7 @@ import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.WilliamsRIndicator;
 import eu.verdelhan.ta4j.indicators.volume.OnBalanceVolumeIndicator;
 import java.util.ArrayList;
+import tccmaven.MISC.LeituraProperties;
 
 /**
  *

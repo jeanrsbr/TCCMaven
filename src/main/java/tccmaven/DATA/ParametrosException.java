@@ -2,25 +2,26 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven;
+package tccmaven.DATA;
 
 /**
  *
  * @author Jean-NoteI5
  */
-public class BaixaArquivoException extends Exception {
+public class ParametrosException extends Exception {
 
-    public BaixaArquivoException(String message) {
+    public ParametrosException(String message) {
         super(message);
     }
 
-    public BaixaArquivoException(String message, Throwable cause) {
+    public ParametrosException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public BaixaArquivoException(Throwable cause) {
+    public ParametrosException(Throwable cause) {
         super(cause);
     }
+    
     
     
 }

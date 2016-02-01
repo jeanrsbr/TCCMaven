@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven;
+package tccmaven.DATA;
 
 import eu.verdelhan.ta4j.TimeSeries;
 import java.util.ArrayList;
