@@ -26,7 +26,7 @@ import tccmaven.DATA.Parametros;
 public class GeraArquivoARFF {
 
     private Parametros parametros;
-    private final String extARFF = ".ARFF";
+    private final String extARFF = ".arff";
 
     public GeraArquivoARFF(Parametros parametros) {
         this.parametros = parametros;
@@ -37,23 +37,29 @@ public class GeraArquivoARFF {
 
 
         try {
-            
+
             String diretorio = LeituraProperties.getInstance().leituraProperties("prop.diretorioARFF");
-            
+
             File dir = new File(diretorio);
             //Se o diretório existe
-            if (!dir.exists()){
+            if (!dir.exists()) {
                 Log.loga("O diretório " + dir.getAbsolutePath() + " para criação do arquivo ARFF não existe");
                 throw new GeraArquivoARFFException("Não foi possível gerar o arquivo ARFF");
             }
-            
+
             //Abre o arquivo
             File file = new File(diretorio + parametros.getAtivo() + extARFF);
             Log.loga("Arquivo ARFF: " + file.getAbsolutePath());
-            
+
             FileOutputStream arquivoGravacao = new FileOutputStream(file);
             OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);
             BufferedWriter writer = new BufferedWriter(strWriter);
+
+            //Obtém a lista de parâmetros existentes nos parâmetros
+            SortedSet<String> nomesParametros = new TreeSet<>(parametros.getNomeParametros());
+            //Ordenado as chaves do HashMap
+            SortedSet<Date> chaves = new TreeSet<>(parametros.getParametros().keySet());
+
 
 
             writer.write("% This is a dataset obtained from the YAHOO FINANCES. Here is the included description:");
@@ -68,15 +74,12 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.write("% http://real-chart.finance.yahoo.com ");
             writer.newLine();
+            writer.write(new String("% Characteristics: #CASES# cases, #ATTRIB# continuous attributes").replaceAll("#CASES#", Integer.toString(chaves.size())).replaceAll("#ATTRIB#", Integer.toString(nomesParametros.size())));
             writer.newLine();
             writer.newLine();
             writer.write("@relation stock");
             writer.newLine();
             writer.newLine();
-
-
-            //Obtém a lista de parâmetros existentes nos parâmetros
-            SortedSet<String> nomesParametros = new TreeSet<>(parametros.getNomeParametros());
 
             for (String nomeParametro : nomesParametros) {
                 writer.write("@attribute " + nomeParametro + " numeric");
@@ -86,11 +89,6 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.write("@data");
             writer.newLine();
-            writer.newLine();
-
-
-            //Ordenado as chaves do HashMap
-            SortedSet<Date> chaves = new TreeSet<>(parametros.getParametros().keySet());
 
             //Percorre as chaves do array
             for (Date chave : chaves) {

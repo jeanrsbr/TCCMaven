@@ -47,6 +47,7 @@ public class Indicadores {
     //Calcula indicadores da série temporal
     private void calculaIndicadoresSerie(TimeSeries timeSeries) {
 
+        
         calculaSMA(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.SMA")));
         calculaIFR(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.IFR")));
         calculaStochasticOscilatorKD(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.StochasticOscilatorKD")));
@@ -136,6 +137,7 @@ public class Indicadores {
 
             //Se estiver no inicio da série temporal
             if (periodo > i) {
+                parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum" + periodo, 0d);
                 continue;
             }
             //CLOSE n - CLOSE n-p
@@ -165,6 +167,7 @@ public class Indicadores {
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
             //Se estiver na primeira ocorrência
             if (i == 0) {
+                parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PVT", 0d);
                 continue;
             }
             //Preço de fechamento atual
