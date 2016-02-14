@@ -33,7 +33,7 @@ public class GeraArquivoARFF {
     }
 
     //Gera arquivo ARFF
-    public void geraArquivo() throws GeraArquivoARFFException {
+    public String geraArquivo() throws GeraArquivoARFFException {
 
 
         try {
@@ -125,7 +125,8 @@ public class GeraArquivoARFF {
             }
             //Fecha o arquivo
             writer.close();
-
+            return file.getAbsolutePath();
+            
         } catch (IOException | IllegalArgumentException ex) {
             throw new GeraArquivoARFFException("Ocorreu erro no momento de gerar o arquivo ARFF", ex);
         }
