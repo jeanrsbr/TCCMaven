@@ -33,7 +33,7 @@ public class GeraArquivoARFF {
     }
 
     //Gera arquivo ARFF
-    public String geraArquivo() throws GeraArquivoARFFException {
+    public String geraArquivo(Date dateIni, Date dateFim) throws GeraArquivoARFFException {
 
 
         try {
@@ -48,7 +48,7 @@ public class GeraArquivoARFF {
             }
 
             //Abre o arquivo
-            File file = new File(diretorio + parametros.getAtivo() + extARFF);
+            File file = new File(diretorio + parametros.getAtivo() + dateIni.toString() + extARFF);
             Log.loga("Arquivo ARFF: " + file.getAbsolutePath());
 
             FileOutputStream arquivoGravacao = new FileOutputStream(file);
@@ -92,6 +92,12 @@ public class GeraArquivoARFF {
 
             //Percorre as chaves do array
             for (Date chave : chaves) {
+
+                //Se esta dentro do intervalo válido
+                if (chave.before(dateIni) || chave.after(dateFim)){
+                    continue;
+                }
+
                 StringBuilder linha = new StringBuilder();
                 //Parametros existentes na data lida na chave
                 ArrayList<Parametro> aux = parametros.getParametros().get(chave);
@@ -102,8 +108,8 @@ public class GeraArquivoARFF {
                     for (int i = 0; i < aux.size(); i++) {
                         //Se for parâmetro correto
                         if (aux.get(i).getDescricao().equals(nomeParametro)) {
-                            /* 
-                             * Realiza a formatação do número para evitar que ele seja representado 
+                            /*
+                             * Realiza a formatação do número para evitar que ele seja representado
                              * como notação cientifica quando o seu valor for muito grande
                              */
                             Double edita = aux.get(i).getValor();
@@ -126,7 +132,7 @@ public class GeraArquivoARFF {
             //Fecha o arquivo
             writer.close();
             return file.getAbsolutePath();
-            
+
         } catch (IOException | IllegalArgumentException ex) {
             throw new GeraArquivoARFFException("Ocorreu erro no momento de gerar o arquivo ARFF", ex);
         }
