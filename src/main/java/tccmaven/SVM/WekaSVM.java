@@ -7,7 +7,9 @@ package tccmaven.SVM;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Random;
 import tccmaven.MISC.Log;
+import weka.classifiers.Evaluation;
 import weka.classifiers.functions.LibSVM;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -59,24 +61,38 @@ public class WekaSVM {
     }
 
     //Realiza o teste de performance do modelo construído
-    public double perfomanceAnalysis() throws WekaSVMException {
+    public double perfomanceAnalysis(String arqARFF) throws WekaSVMException {
 
-        double[] percentualAcerto = new double[20];
+
+
+        //TODO: GERAR ARFF de teste com apenas 20 ocorrências
 
         try {
-
+            double[] percentualAcerto = new double[20];
+            //Monta instância para predição
+            Instances prediction = buildBase(arqARFF);
+            //Percorre o arquivo zerando o parâmetro alvo
+            for (int i = 0; i < prediction.numInstances(); i++) {
+                //Zera o parâmetro alvo
+                prediction.instance(i).setValue(prediction.numAttributes() - 1, 0d);
+            }
+            
+            
+            
+            
+            
             //Projeta os últimos 20 resultados
             for (int i = 0; i < 20; i++) {
                 //Obtém a instância real contida no arquivo
-                Instance prediction = (Instance) train.instance(train.numInstances() - 1 - i).copy();
+                Instance predictions = (Instance) train.instance(train.numInstances() - 1 - i).copy();
                 //Obtém o valor real do atributo
-                double real = prediction.value(train.numAttributes() - 1);
+                double real = predictions.value(train.numAttributes() - 1);
                 //Zera o atributado alvo
-                prediction.setValue(train.numAttributes() - 1, 0d);
+                predictions.setValue(train.numAttributes() - 1, 0d);
                 //Adiciona a predição ao DATASET 
-                prediction.setDataset(train);
+                predictions.setDataset(train);
                 //Valor predito
-                double predict = svm.classifyInstance(prediction);
+                double predict = svm.classifyInstance(predictions);
                 //Ajusta a tabela de percentual de acerto
                 percentualAcerto[i] = (predict * 100) / real;
             }
@@ -111,13 +127,16 @@ public class WekaSVM {
             svm.setProbabilityEstimates(false);
             svm.setShrinking(true);
             svm.setWeights("");
+            svm.setDebug(false);
+
+
             svm.buildClassifier(train);
 
-//            Evaluation evaluation = new Evaluation(train);
-//            
-//            evaluation.crossValidateModel(svm, train, 10, new Random(1));
-//            
-//            System.out.println(evaluation.toSummaryString());
+            Evaluation eva = new Evaluation(train);
+            eva.crossValidateModel(svm, train, 10, new Random(1));
+            eva.evaluateModel(svm, train);
+
+
             return svm;
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
