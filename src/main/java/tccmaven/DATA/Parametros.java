@@ -24,6 +24,8 @@ public class Parametros {
     private HashSet<String> nomeParametros;
     //Parâmetros montados a partir das séries temporais
     private HashMap<Date, ArrayList<Parametro>> parametros;
+    //Atributo alvo para predição
+    private String attTarget;
 
     //Ativo ao qual se referem os parâmetros
     public Parametros(String ativo) {

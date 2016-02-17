@@ -7,9 +7,8 @@ package tccmaven.SVM;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Random;
+import libsvm.svm;
 import tccmaven.MISC.Log;
-import weka.classifiers.Evaluation;
 import weka.classifiers.functions.LibSVM;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -27,14 +26,11 @@ public class WekaSVM {
     private double difValorPredito = 0;
     //Percentual de diferença entre o dia atual e o predito
     private double percentualValorPredito = 0;
-    //Instância da base de treinamento
-    private Instances train = null;
-    //Instância do modelo de regressão
-    private LibSVM svm = null;
+    
+    private String arqARFF;
 
     public WekaSVM(String arqARFF) throws WekaSVMException {
-        train = buildBase(arqARFF);
-        svm = buildModel(train);
+        this.arqARFF = arqARFF;
     }
 
     //Realiza a predição da cotação de fechamento do próximo dia
@@ -43,17 +39,6 @@ public class WekaSVM {
 
         try {
 
-            /* ----------------- Realiza predição ------------------- */
-            Instance prediction = new Instance(17);
-            prediction.setDataset(train);
-
-            //TODO: Setar os parâmetros da predição
-
-
-
-            double pred;
-            pred = svm.classifyInstance(prediction);
-            System.out.println(pred);
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
         }
@@ -61,41 +46,42 @@ public class WekaSVM {
     }
 
     //Realiza o teste de performance do modelo construído
-    public double perfomanceAnalysis(String arqARFF) throws WekaSVMException {
+    public double perfomanceAnalysis() throws WekaSVMException {
 
 
-
-        //TODO: GERAR ARFF de teste com apenas 20 ocorrências
+        
+        //Treino 70:30
+        
+        
+        //TODO: Descobrir um jeito de silenciar a geração dos dados do WEKA
+        //TODO: Colocar a variável alvo no final do arquivo
 
         try {
-            double[] percentualAcerto = new double[20];
-            //Monta instância para predição
-            Instances prediction = buildBase(arqARFF);
+            //Monta base completa
+            Instances dataSet = buildBase();
+            
+            int trainSize = (int) Math.round(dataSet.numInstances() * 70 / 100);
+            int testSize = dataSet.numInstances() - trainSize;
+            
+            Instances train = new Instances(dataSet, 0, trainSize);
+            Instances test = new Instances(dataSet, trainSize, testSize);
+            
+            train.setClassIndex(train.numAttributes() - 1);
+            test.setClassIndex(test.numAttributes() - 1);
+            //Constroi modelo
+            LibSVM svm = buildModel(train);            
+            
+            double[] percentualAcerto = new double[test.numInstances()];
             //Percorre o arquivo zerando o parâmetro alvo
-            for (int i = 0; i < prediction.numInstances(); i++) {
-                //Zera o parâmetro alvo
-                prediction.instance(i).setValue(prediction.numAttributes() - 1, 0d);
-            }
-            
-            
-            
-            
-            
-            //Projeta os últimos 20 resultados
-            for (int i = 0; i < 20; i++) {
-                //Obtém a instância real contida no arquivo
-                Instance predictions = (Instance) train.instance(train.numInstances() - 1 - i).copy();
+            for (int i = 0; i < test.numInstances(); i++) {
                 //Obtém o valor real do atributo
-                double real = predictions.value(train.numAttributes() - 1);
-                //Zera o atributado alvo
-                predictions.setValue(train.numAttributes() - 1, 0d);
-                //Adiciona a predição ao DATASET 
-                predictions.setDataset(train);
+                double real = test.instance(i).classValue();
                 //Valor predito
-                double predict = svm.classifyInstance(predictions);
+                double predict = svm.classifyInstance(test.instance(i));
                 //Ajusta a tabela de percentual de acerto
                 percentualAcerto[i] = (predict * 100) / real;
             }
+
             Log.loga("Desvio padrão: " + desvioPadrao(percentualAcerto));
             return desvioPadrao(percentualAcerto);
 
@@ -110,7 +96,7 @@ public class WekaSVM {
 
     private LibSVM buildModel(Instances train) throws WekaSVMException {
         try {
-            svm = new LibSVM();
+            LibSVM svm = new LibSVM();
             svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
             svm.setCacheSize(100);
             svm.setCoef0(0.0);
@@ -129,14 +115,9 @@ public class WekaSVM {
             svm.setWeights("");
             svm.setDebug(false);
 
-
+            
             svm.buildClassifier(train);
-
-            Evaluation eva = new Evaluation(train);
-            eva.crossValidateModel(svm, train, 10, new Random(1));
-            eva.evaluateModel(svm, train);
-
-
+            
             return svm;
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
@@ -144,7 +125,7 @@ public class WekaSVM {
     }
 
     //Monta a base de dados
-    private Instances buildBase(String arqARFF) throws WekaSVMException {
+    private Instances buildBase() throws WekaSVMException {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(arqARFF));
             Instances train = new Instances(reader);

@@ -15,6 +15,11 @@ import tccmaven.MISC.Log;
 import tccmaven.OUTPUT.GeraArquivoARFFException;
 import tccmaven.OUTPUT.GeraArquivoARFF;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import tccmaven.SVM.WekaSVM;
 import tccmaven.SVM.WekaSVMException;
 
@@ -27,7 +32,22 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         try {
-
+            //Se não foi informada a data inicial
+            if (LeituraProperties.getInstance().leituraProperties("prop.DataIni").equals("")) {
+                System.out.println("É obrigatório informar a data inicial para importação");
+                return;
+            } 
+            
+            //Se não foi informada a data final
+            if (LeituraProperties.getInstance().leituraProperties("prop.DataFim").equals("")){
+                System.out.println("É obrigatório informar a data inicial para importação");
+                return;
+            }
+                    
+                    
+                    
+                    
+            
             //Obtém a lista de ativos que devem ser importados
             String[] ativos = LeituraProperties.getInstance().leituraProperties("prop.ativos").split("#");
 
@@ -62,6 +82,8 @@ public class Main {
                 //TODO: Eliminar dados redundantes e etc
 
 
+
+                
                 //Criar arquivo ARFF
                 Log.loga("Será gerado o arquivo ARFF");
                 GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(parametros);
@@ -69,7 +91,7 @@ public class Main {
 
                 //Executar algoritmo SVM
                 WekaSVM wekaSVM = new WekaSVM(arquivoARFF);
-                double resultado = wekaSVM.perfomanceAnalysis(arquivoARFF);
+                double resultado = wekaSVM.perfomanceAnalysis();
 
                 System.out.println("Desvio padrão: " + resultado);
 

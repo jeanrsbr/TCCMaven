@@ -1,10 +1,10 @@
 % This is a dataset obtained from the YAHOO FINANCES. Here is the included description:
 %
-% The data provided are daily stock prices from 02/01/2015 through 30/12/2015, for AGRO3.SA.
+% The data provided are daily stock prices from 02/01/2015 through 29/12/2015, for AGRO3.SA.
 %
 % Source: collection of regression datasets by Jean Felipe Hartz (jeanrsbr@gmail.com) at
 % http://real-chart.finance.yahoo.com 
-% Characteristics: 245 cases, 17 continuous attributes
+% Characteristics: 244 cases, 17 continuous attributes
 
 @relation stock
 
@@ -271,4 +271,3 @@
 15.78,0.99,11.06,11.14,11,11.08,-0.05,0.61,2909300,11.13,5.84,35447.63,89.61,87.72,87.37,25700,-12.63
 15.06,0.1,11,11.09,11,11.06,-0.04,0.53,2896000,11.06,5.06,35375.48,82.72,85.96,81.05,13300,-18.95
 14.22,-0.4,10.96,11.09,10.89,11.03,-0.04,0.21,2878600,11.08,1.95,35312.21,68.42,77.83,65.08,17400,-34.92
-13.44,0.05,11.03,11.07,10.96,11.03,-0.04,0.28,2966900,11,2.6,35876.17,71.88,73.12,73.21,88300,-26.79

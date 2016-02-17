@@ -33,7 +33,7 @@ public class GeraArquivoARFF {
     }
 
     //Gera arquivo ARFF
-    public String geraArquivo(Date dateIni, Date dateFim) throws GeraArquivoARFFException {
+    public String geraArquivo() throws GeraArquivoARFFException {
 
 
         try {
@@ -48,7 +48,7 @@ public class GeraArquivoARFF {
             }
 
             //Abre o arquivo
-            File file = new File(diretorio + parametros.getAtivo() + dateIni.toString() + extARFF);
+            File file = new File(diretorio + parametros.getAtivo() + extARFF);
             Log.loga("Arquivo ARFF: " + file.getAbsolutePath());
 
             FileOutputStream arquivoGravacao = new FileOutputStream(file);
@@ -57,6 +57,8 @@ public class GeraArquivoARFF {
 
             //Obtém a lista de parâmetros existentes nos parâmetros
             SortedSet<String> nomesParametros = new TreeSet<>(parametros.getNomeParametros());
+            
+            
             //Ordenado as chaves do HashMap
             SortedSet<Date> chaves = new TreeSet<>(parametros.getParametros().keySet());
 
@@ -92,11 +94,6 @@ public class GeraArquivoARFF {
 
             //Percorre as chaves do array
             for (Date chave : chaves) {
-
-                //Se esta dentro do intervalo válido
-                if (chave.before(dateIni) || chave.after(dateFim)){
-                    continue;
-                }
 
                 StringBuilder linha = new StringBuilder();
                 //Parametros existentes na data lida na chave
