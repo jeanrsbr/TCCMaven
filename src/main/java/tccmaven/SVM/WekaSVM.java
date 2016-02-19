@@ -7,8 +7,11 @@ package tccmaven.SVM;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import libsvm.svm;
 import tccmaven.MISC.Log;
+import weka.classifiers.Classifier;
 import weka.classifiers.functions.LibSVM;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -96,6 +99,10 @@ public class WekaSVM {
 
     private LibSVM buildModel(Instances train) throws WekaSVMException {
         try {
+            
+            PrintStream ori = new PrintStream(System.out);
+            System.setOut(new PrintStream("output_weka.txt"));
+            
             LibSVM svm = new LibSVM();
             svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
             svm.setCacheSize(100);
@@ -115,8 +122,9 @@ public class WekaSVM {
             svm.setWeights("");
             svm.setDebug(false);
 
-            
             svm.buildClassifier(train);
+            
+            System.setOut(ori);
             
             return svm;
         } catch (Exception ex) {

@@ -74,7 +74,7 @@ public class Indicadores {
 
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "MA" + periodo, smaIndicator.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "MA" + periodo, smaIndicator.getValue(i).toDouble());
         }
     }
 
@@ -84,7 +84,7 @@ public class Indicadores {
         RSIIndicator rsiIndicator = new RSIIndicator(closePrice, periodo);
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "RSI" + periodo, rsiIndicator.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "RSI" + periodo, rsiIndicator.getValue(i).toDouble());
         }
 
     }
@@ -97,8 +97,8 @@ public class Indicadores {
 
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SOKI" + periodo, soki.getValue(i).toDouble());
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SODI" + periodo, sodi.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SOKI" + periodo, soki.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "SODI" + periodo, sodi.getValue(i).toDouble());
         }
 
     }
@@ -107,7 +107,7 @@ public class Indicadores {
     private void calculaOnBalanceVolume(TimeSeries timeSeries) {
         OnBalanceVolumeIndicator onBalanceVolume = new OnBalanceVolumeIndicator(timeSeries);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "OBV", onBalanceVolume.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "OBV", onBalanceVolume.getValue(i).toDouble());
         }
     }
 
@@ -116,7 +116,7 @@ public class Indicadores {
         ClosePriceIndicator closePrice = new ClosePriceIndicator(timeSeries);
         MACDIndicator mACD = new MACDIndicator(closePrice, periodoCurto, periodoLongo);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "MACD", mACD.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "MACD", mACD.getValue(i).toDouble());
         }
     }
 
@@ -125,7 +125,7 @@ public class Indicadores {
 
         WilliamsRIndicator williamsRIndicator = new WilliamsRIndicator(timeSeries, periodo);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "WR" + periodo, williamsRIndicator.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "WR" + periodo, williamsRIndicator.getValue(i).toDouble());
         }
     }
 
@@ -137,12 +137,12 @@ public class Indicadores {
 
             //Se estiver no inicio da série temporal
             if (periodo > i) {
-                parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum" + periodo, 0d);
+                parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum" + periodo, 0d);
                 continue;
             }
             //CLOSE n - CLOSE n-p
             Double momentum = timeSeries.getTick(i).getClosePrice().toDouble() - timeSeries.getTick(i - periodo).getClosePrice().toDouble();
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum" + periodo, momentum);
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "Momentum" + periodo, momentum);
         }
 
 
@@ -155,7 +155,7 @@ public class Indicadores {
         ROCIndicator rOCIndicator = new ROCIndicator(closePrice, periodo);
 
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PROC" + periodo, rOCIndicator.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PROC" + periodo, rOCIndicator.getValue(i).toDouble());
         }
     }
 
@@ -167,7 +167,7 @@ public class Indicadores {
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
             //Se estiver na primeira ocorrência
             if (i == 0) {
-                parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PVT", 0d);
+                parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PVT", 0d);
                 continue;
             }
             //Preço de fechamento atual
@@ -179,7 +179,7 @@ public class Indicadores {
             //VPTprev + Volume x ((CloseN - CloseN-1) / CloseN-1) 
             Double pVT = pVTAnterior + volume * ((closePrice - closePriceAnt) / closePriceAnt);
 
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PVT", pVT);
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "PVT", pVT);
             //Atualiza pVTAnterior
             pVTAnterior = pVT;
         }
@@ -196,7 +196,7 @@ public class Indicadores {
             Double closePrice = timeSeries.getTick(i).getClosePrice().toDouble();
             Double sMA = sMAIndicator.getValue(i).toDouble();
             Double bIAS = ((closePrice - sMA) / sMA) * 100;
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "BIAS" + periodo, bIAS);
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "BIAS" + periodo, bIAS);
         }
     }
     
@@ -206,7 +206,7 @@ public class Indicadores {
         AverageDirectionalMovementIndicator admi = new AverageDirectionalMovementIndicator(timeSeries, periodo);
         //Varre a série temporal
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereIndicadorTecnico(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "ADMI" + periodo, admi.getValue(i).toDouble());
+            parametros.insereValor(timeSeries.getName(), timeSeries.getTick(i).getEndTime().toDate(), "ADMI" + periodo, admi.getValue(i).toDouble());
         }
         
     }

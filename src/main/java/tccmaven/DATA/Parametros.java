@@ -70,15 +70,15 @@ public class Parametros {
             //Obtém a data da ocorrência
             Date data = timeSeries.getTick(i).getEndTime().toDate();
             //Adiciona o preço de fechamento
-            insereIndicadorTecnico(nome, data, "ClosePrice", timeSeries.getTick(i).getClosePrice().toDouble());
+            insereValor(nome, data, "ClosePrice", timeSeries.getTick(i).getClosePrice().toDouble());
             //Adiciona o preço de abertura
-            insereIndicadorTecnico(nome, data, "OpenPrice", timeSeries.getTick(i).getOpenPrice().toDouble());
+            insereValor(nome, data, "OpenPrice", timeSeries.getTick(i).getOpenPrice().toDouble());
             //Adiciona o maior preços
-            insereIndicadorTecnico(nome, data, "HighPrice", timeSeries.getTick(i).getMaxPrice().toDouble());
+            insereValor(nome, data, "HighPrice", timeSeries.getTick(i).getMaxPrice().toDouble());
             //Adiciona o menor preço
-            insereIndicadorTecnico(nome, data, "LowPrice", timeSeries.getTick(i).getMinPrice().toDouble());
+            insereValor(nome, data, "LowPrice", timeSeries.getTick(i).getMinPrice().toDouble());
             //Adiciona o volume
-            insereIndicadorTecnico(nome, data, "Volume", timeSeries.getTick(i).getVolume().toDouble());
+            insereValor(nome, data, "Volume", timeSeries.getTick(i).getVolume().toDouble());
         }
         //Adiciona a série temporal ao controle dos parâmetros
         this.timeSeries.add(timeSeries);
@@ -87,7 +87,7 @@ public class Parametros {
     }
     //Insere um indicador técnico do ativo            
 
-    public void insereIndicadorTecnico(String nameTimeSeries, Date data, String desIndicador, double valIndicador) {
+    public void insereValor(String nameTimeSeries, Date data, String desIndicador, double valIndicador) {
 
         //Obtém o array list da data processada
         ArrayList<Parametro> parametro = parametros.get(data);
@@ -100,14 +100,12 @@ public class Parametros {
         if (Double.isNaN(valIndicador)){
             valIndicador = 0d;
         }
-            
         
         //Adiciona o preço de fechamento
-        parametro.add(new Parametro(nameTimeSeries + desIndicador, valIndicador));
+        parametro.add(new Parametro(nameTimeSeries + desIndicador, valIndicador, false));
         insereListaParametro(nameTimeSeries + desIndicador);
         //Adiciona os parâmetros ao HashMap
         parametros.put(data, parametro);
-
 
     }
 
