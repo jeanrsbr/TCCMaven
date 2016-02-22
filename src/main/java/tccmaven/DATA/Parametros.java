@@ -5,10 +5,15 @@
 package tccmaven.DATA;
 
 import eu.verdelhan.ta4j.TimeSeries;
+import java.lang.reflect.Array;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  *
@@ -24,8 +29,8 @@ public class Parametros {
     private HashSet<String> nomeParametros;
     //Parâmetros montados a partir das séries temporais
     private HashMap<Date, ArrayList<Parametro>> parametros;
-    //Atributo alvo para predição
-    private String attTarget;
+    //Parâmetro alvo
+    private HashMap<Date, Double> parTarget;
 
     //Ativo ao qual se referem os parâmetros
     public Parametros(String ativo) {
@@ -33,7 +38,7 @@ public class Parametros {
         timeSeries = new ArrayList<>();
         nomeParametros = new HashSet<>();
         parametros = new HashMap<>();
-                
+
     }
 
     public ArrayList<TimeSeries> getTimeSeries() {
@@ -51,10 +56,19 @@ public class Parametros {
     public HashMap<Date, ArrayList<Parametro>> getParametros() {
         return parametros;
     }
-    
 
-    //Monta parâmetros para utilizar na linha do arquivo
-    public void montaParametros() {
+    public HashMap<Date, Double> getParTarget() {
+        return parTarget;
+    }
+
+    public int getNumPar() {
+        //Retorna a quantidade de parâmetros adicionados + parâmetro alvo
+        return nomeParametros.size() + 1;
+    }
+
+    public int getNumReg() {
+        //Retorna a quantidade de registros
+        return parametros.size();
     }
 
     //Insere série temporal do ativo
@@ -95,17 +109,62 @@ public class Parametros {
         if (parametro == null) {
             parametro = new ArrayList<>();
         }
-        
+
         //
-        if (Double.isNaN(valIndicador)){
+        if (Double.isNaN(valIndicador)) {
             valIndicador = 0d;
         }
-        
+
         //Adiciona o preço de fechamento
-        parametro.add(new Parametro(nameTimeSeries + desIndicador, valIndicador, false));
+        parametro.add(new Parametro(nameTimeSeries + desIndicador, valIndicador));
         insereListaParametro(nameTimeSeries + desIndicador);
         //Adiciona os parâmetros ao HashMap
         parametros.put(data, parametro);
+
+    }
+
+    //Popula variável target
+    public void criaTarget(String nomeTimeSeries) throws ParametrosException {
+
+        //TODO: Criar forma de deixar a variável alvo configurável
+
+        //Ordenado as chaves do HashMap
+        SortedSet<Date> chaves = new TreeSet<>(parametros.keySet());
+        Iterator<Date> iterator = chaves.iterator();
+
+        Date dateProx = null;
+        Date dateAtu = null;
+
+        //Varre as chaves
+        while (true) {
+            //Se não possui um próximo elemento
+            if (!iterator.hasNext()) {
+                break;
+            }
+
+            //Obtém a data do registro atual e do próximo
+            dateAtu = dateProx;
+            dateProx = iterator.next();
+
+            //Se não possui data atual (Primeiro registro)
+            if (dateAtu == null) {
+                continue;
+            }
+
+            //Obtém o valor do parâmetro posterior
+            double valor = getValorParametro(parametros.get(dateProx), nomeTimeSeries + "HighPrice");
+            //Insere o valor alvo
+            insereValorTarget(dateAtu, valor);
+        }
+    }
+
+//Insere parâmetro alvo
+    private void insereValorTarget(Date data, double valIndicador) throws ParametrosException {
+
+        if (parTarget.containsKey(data)) {
+            throw new ParametrosException("Não foi possível incluir o parâmetro alvo, duplicação de chave");
+        }
+        parTarget.put(data, valIndicador);
 
     }
 
@@ -113,5 +172,19 @@ public class Parametros {
     private void insereListaParametro(String nomeParametro) {
         //Adiciona nome do parâmetro ao SET
         nomeParametros.add(nomeParametro);
+    }
+
+    //Retorna o conteúdo do parâmetro
+    public double getValorParametro(ArrayList<Parametro> param, String nomeParametro) throws ParametrosException {
+
+        //Varre os parâmetros existentes
+        for (int i = 0; i < param.size(); i++) {
+            //Se for parâmetro correto
+            if (param.get(i).getDescricao().equals(nomeParametro)) {
+                return param.get(i).getValor();
+            }
+        }
+        //Se não encontrou o parâmetro insere excessão
+        throw new ParametrosException("Não foi encontrado o nome do parâmetro indicado");
     }
 }

@@ -12,12 +12,10 @@ public class Parametro {
 
     private String descricao;
     private double valor;
-    private boolean alvo;
 
-    public Parametro(String descricao, double valor, boolean alvo) {
+    public Parametro(String descricao, double valor) {
         this.descricao = descricao;
         this.valor = valor;
-        this.alvo = alvo;
     }
 
     public String getDescricao() {
@@ -36,11 +34,4 @@ public class Parametro {
         this.valor = valor;
     }
 
-    public boolean isAlvo() {
-        return alvo;
-    }
-
-    public void setAlvo(boolean alvo) {
-        this.alvo = alvo;
-    }
 }

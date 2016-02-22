@@ -29,7 +29,6 @@ public class WekaSVM {
     private double difValorPredito = 0;
     //Percentual de diferença entre o dia atual e o predito
     private double percentualValorPredito = 0;
-    
     private String arqARFF;
 
     public WekaSVM(String arqARFF) throws WekaSVMException {
@@ -41,7 +40,6 @@ public class WekaSVM {
 
 
         try {
-
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
         }
@@ -52,28 +50,28 @@ public class WekaSVM {
     public double perfomanceAnalysis() throws WekaSVMException {
 
 
-        
+
         //Treino 70:30
-        
-        
+
+
         //TODO: Descobrir um jeito de silenciar a geração dos dados do WEKA
         //TODO: Colocar a variável alvo no final do arquivo
 
         try {
             //Monta base completa
             Instances dataSet = buildBase();
-            
+
             int trainSize = (int) Math.round(dataSet.numInstances() * 70 / 100);
             int testSize = dataSet.numInstances() - trainSize;
-            
+
             Instances train = new Instances(dataSet, 0, trainSize);
             Instances test = new Instances(dataSet, trainSize, testSize);
-            
+
             train.setClassIndex(train.numAttributes() - 1);
             test.setClassIndex(test.numAttributes() - 1);
             //Constroi modelo
-            LibSVM svm = buildModel(train);            
-            
+            LibSVM svm = buildModel(train);
+
             double[] percentualAcerto = new double[test.numInstances()];
             //Percorre o arquivo zerando o parâmetro alvo
             for (int i = 0; i < test.numInstances(); i++) {
@@ -99,10 +97,8 @@ public class WekaSVM {
 
     private LibSVM buildModel(Instances train) throws WekaSVMException {
         try {
-            
-            PrintStream ori = new PrintStream(System.out);
-            System.setOut(new PrintStream("output_weka.txt"));
-            
+
+
             LibSVM svm = new LibSVM();
             svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
             svm.setCacheSize(100);
@@ -122,10 +118,13 @@ public class WekaSVM {
             svm.setWeights("");
             svm.setDebug(false);
 
+            PrintStream def = new PrintStream(System.out);
+            System.setOut(new PrintStream("output_weka.txt"));
+
             svm.buildClassifier(train);
-            
-            System.setOut(ori);
-            
+
+            System.setOut(def);
+
             return svm;
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");

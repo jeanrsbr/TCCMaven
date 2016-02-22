@@ -14,10 +14,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import tccmaven.DATA.Indicadores;
 import tccmaven.MISC.LeituraProperties;
 import tccmaven.MISC.Log;
 import tccmaven.DATA.Parametro;
 import tccmaven.DATA.Parametros;
+import tccmaven.DATA.ParametrosException;
+import tccmaven.IMPORT.BaixaArquivoException;
+import tccmaven.IMPORT.Importador;
+import tccmaven.IMPORT.ImportadorException;
 
 /**
  *
@@ -25,15 +30,42 @@ import tccmaven.DATA.Parametros;
  */
 public class GeraArquivoARFF {
 
-    private Parametros parametros;
     private final String extARFF = ".arff";
+    private String[] nomeTimeSeries;
 
-    public GeraArquivoARFF(Parametros parametros) {
-        this.parametros = parametros;
+    public GeraArquivoARFF(String[] nomeTimeSeries) {
+        this.nomeTimeSeries = nomeTimeSeries;
+    }
+
+    //Gera o arquivo ARFF com a quantidade de time series específicada
+    public String geraArquivo(int qtdTimeSeries) throws GeraArquivoARFFException, ImportadorException, ParametrosException, BaixaArquivoException {
+
+        //Instância os parâmetros com o primeiro ativo
+        Parametros parametros = new Parametros(nomeTimeSeries[0]);
+
+        for (int i = 0; i < qtdTimeSeries; i++) {
+            //Baixa arquivo CSV e Converte arquivo para memória
+            Log.loga("Importando o ativo " + nomeTimeSeries[i]);
+            Importador importador = new Importador(nomeTimeSeries[i]);
+            parametros.insereSerieTemporal(importador.montaTimeSeries());
+        }
+
+        //Calcula indicadores
+        Log.loga("Serão calculados os indicadores");
+        Indicadores indicadores = new Indicadores(parametros);
+        indicadores.calculaIndicadores();
+        //Atualiza parâmetros com a inclusão dos indicadores
+        parametros = indicadores.getParametros();
+
+        Log.loga("Será inserida a variável alvo");
+        parametros.criaTarget(nomeTimeSeries[0]);
+
+        //Retorna o nome do arquivo gerado
+        return geraArquivo(parametros);
     }
 
     //Gera arquivo ARFF
-    public String geraArquivo() throws GeraArquivoARFFException {
+    private String geraArquivo(Parametros parametros) throws GeraArquivoARFFException, ParametrosException {
 
 
         try {
@@ -55,15 +87,6 @@ public class GeraArquivoARFF {
             OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);
             BufferedWriter writer = new BufferedWriter(strWriter);
 
-            //Obtém a lista de parâmetros existentes nos parâmetros
-            SortedSet<String> nomesParametros = new TreeSet<>(parametros.getNomeParametros());
-            
-            
-            //Ordenado as chaves do HashMap
-            SortedSet<Date> chaves = new TreeSet<>(parametros.getParametros().keySet());
-
-
-
             writer.write("% This is a dataset obtained from the YAHOO FINANCES. Here is the included description:");
             writer.newLine();
             writer.write("%");
@@ -76,21 +99,31 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.write("% http://real-chart.finance.yahoo.com ");
             writer.newLine();
-            writer.write(new String("% Characteristics: #CASES# cases, #ATTRIB# continuous attributes").replaceAll("#CASES#", Integer.toString(chaves.size())).replaceAll("#ATTRIB#", Integer.toString(nomesParametros.size())));
+            writer.write(new String("% Characteristics: #CASES# cases, #ATTRIB# continuous attributes").replaceAll("#CASES#", Integer.toString(parametros.getNumReg())).replaceAll("#ATTRIB#", Integer.toString(parametros.getNumPar())));
             writer.newLine();
             writer.newLine();
             writer.write("@relation stock");
             writer.newLine();
             writer.newLine();
 
+
+            //Obtém a lista de parâmetros existentes nos parâmetros
+            SortedSet<String> nomesParametros = new TreeSet<>(parametros.getNomeParametros());
+
             for (String nomeParametro : nomesParametros) {
                 writer.write("@attribute " + nomeParametro + " numeric");
                 writer.newLine();
             }
 
+            writer.write("@attribute " + "Target" + " numeric");
+            writer.newLine();
+
             writer.newLine();
             writer.write("@data");
             writer.newLine();
+
+            //Ordenado as chaves do HashMap
+            SortedSet<Date> chaves = new TreeSet<>(parametros.getParametros().keySet());
 
             //Percorre as chaves do array
             for (Date chave : chaves) {
@@ -101,26 +134,13 @@ public class GeraArquivoARFF {
 
                 //Exporta na mesma ordenação dos parâmetros
                 for (String nomeParametro : nomesParametros) {
-                    //Varre os parâmetros existentes
-                    for (int i = 0; i < aux.size(); i++) {
-                        //Se for parâmetro correto
-                        if (aux.get(i).getDescricao().equals(nomeParametro)) {
-                            /*
-                             * Realiza a formatação do número para evitar que ele seja representado
-                             * como notação cientifica quando o seu valor for muito grande
-                             */
-                            Double edita = aux.get(i).getValor();
-                            NumberFormat f = NumberFormat.getInstance();
-                            f.setGroupingUsed(false);
-                            f.setMaximumFractionDigits(2);
-                            String editado = f.format(edita.doubleValue()).replaceAll(",", ".");
-                            linha.append(editado);
-                            linha.append(",");
-                        }
-                    }
+                    linha.append(editaDouble(parametros.getValorParametro(aux, nomeParametro)));
+                    linha.append(",");
                 }
-                //Remove a última vírgula da literal
-                linha.delete(linha.length() - 1, linha.length());
+
+                //Parâmetro target
+                linha.append(editaDouble(parametros.getParTarget().get(chave)));
+
                 //Exporta a linha para o arquivo
                 writer.write(linha.toString());
                 writer.newLine();
@@ -134,5 +154,16 @@ public class GeraArquivoARFF {
             throw new GeraArquivoARFFException("Ocorreu erro no momento de gerar o arquivo ARFF", ex);
         }
 
+    }
+    /*
+     * Realiza a formatação do número para evitar que ele seja representado
+     * como notação cientifica quando o seu valor for muito grande
+     */
+
+    private String editaDouble(Double valor) {
+        NumberFormat f = NumberFormat.getInstance();
+        f.setGroupingUsed(false);
+        f.setMaximumFractionDigits(2);
+        return f.format(valor.doubleValue()).replaceAll(",", ".");
     }
 }
