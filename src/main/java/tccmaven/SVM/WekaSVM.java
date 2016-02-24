@@ -49,14 +49,6 @@ public class WekaSVM {
     //Realiza o teste de performance do modelo construído
     public double perfomanceAnalysis() throws WekaSVMException {
 
-
-
-        //Treino 70:30
-
-
-        //TODO: Descobrir um jeito de silenciar a geração dos dados do WEKA
-        //TODO: Colocar a variável alvo no final do arquivo
-
         try {
             //Monta base completa
             Instances dataSet = buildBase();

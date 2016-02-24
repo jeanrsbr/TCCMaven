@@ -57,6 +57,14 @@ public class GeraArquivoARFF {
         //Atualiza parâmetros com a inclusão dos indicadores
         parametros = indicadores.getParametros();
 
+        //Filtro
+        //TODO: Eliminar dados redundantes e etc
+
+        //Balanceia os parâmetros (Feriados, dias sem pregão, dias sem movimento)
+        parametros.balance();
+        
+        
+
         Log.loga("Será inserida a variável alvo");
         parametros.criaTarget(nomeTimeSeries[0]);
 

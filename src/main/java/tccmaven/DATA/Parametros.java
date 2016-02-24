@@ -5,8 +5,6 @@
 package tccmaven.DATA;
 
 import eu.verdelhan.ta4j.TimeSeries;
-import java.lang.reflect.Array;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -38,6 +36,7 @@ public class Parametros {
         timeSeries = new ArrayList<>();
         nomeParametros = new HashSet<>();
         parametros = new HashMap<>();
+        parTarget = new HashMap<>();
 
     }
 
@@ -126,8 +125,6 @@ public class Parametros {
     //Popula variável target
     public void criaTarget(String nomeTimeSeries) throws ParametrosException {
 
-        //TODO: Criar forma de deixar a variável alvo configurável
-
         //Ordenado as chaves do HashMap
         SortedSet<Date> chaves = new TreeSet<>(parametros.keySet());
         Iterator<Date> iterator = chaves.iterator();
@@ -137,13 +134,22 @@ public class Parametros {
 
         //Varre as chaves
         while (true) {
+            //Incrementa a data
+            dateAtu = dateProx;
+
             //Se não possui um próximo elemento
             if (!iterator.hasNext()) {
+
+                //Se não possui data atual (Primeiro registro)
+                if (dateAtu == null) {
+                    break;
+                }
+                //Insere o valor alvo (Apenas para não ficar com o último registro sem a variável TARGET
+                insereValorTarget(dateAtu, 0d);
                 break;
             }
 
             //Obtém a data do registro atual e do próximo
-            dateAtu = dateProx;
             dateProx = iterator.next();
 
             //Se não possui data atual (Primeiro registro)
@@ -156,6 +162,83 @@ public class Parametros {
             //Insere o valor alvo
             insereValorTarget(dateAtu, valor);
         }
+    }
+
+    //Balanceia os registros contidos nos parâmetros
+    public void balance() {
+
+        //Ordenado as chaves do HashMap
+        SortedSet<Date> chaves = new TreeSet<>(parametros.keySet());
+        Iterator<Date> iterator = chaves.iterator();
+
+        Date dateAnt = null;
+        Date dateAtu = null;
+
+        //Varre as chaves
+        while (true) {
+
+            //Se não possui um próximo elemento
+            if (!iterator.hasNext()) {
+                break;
+            }
+
+            //Obtém a data do registro atual e do anterior
+            dateAnt = dateAtu;
+            dateAtu = iterator.next();
+
+            //Parametros existentes na data lida na chave
+            ArrayList<Parametro> atual = parametros.get(dateAtu);
+            //Se a ocorrência dos parâmetros possui todos os elementos
+            if (atual.size() == nomeParametros.size()) {
+                continue;
+            }
+
+            // Se não possui data atual (Primeiro registro)
+            if (dateAnt == null) {
+                //Se o primeiro registro estiver desbalanceado, não tem de onde copiar, o registro deve ser excluído
+                parametros.remove(dateAtu);
+                //Inicializa a data atual para forçar um reinicio
+                dateAtu = null;
+                //Vai para a próxima ocorrência
+                continue;
+            }
+
+            //Parâmetro existentes no dia anterior
+            ArrayList<Parametro> anterior = parametros.get(dateAnt);
+
+            //Balanceia os parâmetros e inseri na ocorrência dos parâmetros
+            parametros.put(dateAtu, balanceiaParametros(anterior, atual));
+
+        }
+    }
+
+    //Faz os parâmetros ficarem com o mesmo número de parâmetros
+    //Caso o destino não tenha um parâmetro que exista na origem, este será copiado
+    private ArrayList<Parametro> balanceiaParametros(ArrayList<Parametro> origem, ArrayList<Parametro> destino) {
+
+        //Realiza copia do array original
+        ArrayList<Parametro> retorno = new ArrayList<>();
+        retorno.addAll(destino);
+
+        //Varre o array de origem
+        for (int i = 0; i < origem.size(); i++) {
+
+            boolean existe = false;
+            //Varre o array de destino
+            for (int j = 0; j < destino.size(); j++) {
+                //Se existe o mesmo parâmetro na origem e no destino
+                if (origem.get(i).getDescricao().equals(destino.get(j).getDescricao())) {
+                    existe = true;
+                    break;
+                }
+            }
+            //Se não encontrou o parâmetro
+            if (!existe) {
+                //Insere o parâmetro para balancear
+                retorno.add(origem.get(i));
+            }
+        }
+        return retorno;
     }
 
 //Insere parâmetro alvo

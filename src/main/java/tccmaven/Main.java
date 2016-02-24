@@ -36,28 +36,23 @@ public class Main {
                 return;
             }
 
+            //Quantidade de ativos a serem importados
+            int qtdativos = Integer.parseInt(LeituraProperties.getInstance().leituraProperties("prop.qtdativos"));
+            
+            
+            
             //Obtém a lista de ativos que devem ser importados
             String[] ativos = LeituraProperties.getInstance().leituraProperties("prop.ativos").split("#");
 
             //Varre a lista de ativos a serem importados
             for (int i = 0; i < ativos.length; i++) {
 
-                //Identifica os ativos em suas diversas bolsas
-                String[] ativosBolsas = ativos[i].split(";");
-
                 //Criar arquivo ARFF
                 Log.loga("Será gerado o arquivo ARFF");
                 //Instância a geração de arquivos ARFF
-                GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(ativosBolsas);              
-                
-                //TODO: Gera apenas de um dos ativos (Apenas para testes)
-                String arquivoARFF = geraArquivoARFF.geraArquivo(1);
-                
-                //Insere variável alvo
-                Log.loga("Insere variável alvo");
-
-                //Filtro
-                //TODO: Eliminar dados redundantes e etc
+                GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(ativos[i].split(";"));              
+                //Gera o arquivo ARFF com a quantidade de ativos indicada no properties
+                String arquivoARFF = geraArquivoARFF.geraArquivo(qtdativos);
 
                 //Executar algoritmo SVM
                 WekaSVM wekaSVM = new WekaSVM(arquivoARFF);

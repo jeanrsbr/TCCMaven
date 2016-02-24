@@ -54,15 +54,10 @@ public class Indicadores {
         calculaOnBalanceVolume(timeSeries);
         calculaMACD(timeSeries, 12, 26);
         calculaPVT(timeSeries);
-        //TODO: Achar o período mais comum
         calculaWillianR(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.WillianR")));
-        //TODO: Achar o período mais comum
         calculaROC(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.ROC")));
-        //TODO: Achar o período mais comum
         calculaMomentum(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.Momentum")));
-        //TODO: Achar o período mais comum
         calculaBIAS(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.BIAS")));
-        //TODO: Achar o período mais comum
         calculaADMI(timeSeries, Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.ADMI")));
 
     }
