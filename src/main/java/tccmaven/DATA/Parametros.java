@@ -5,12 +5,15 @@
 package tccmaven.DATA;
 
 import eu.verdelhan.ta4j.TimeSeries;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.NavigableSet;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -21,48 +24,33 @@ public class Parametros {
 
     //Nome do ativo
     private String ativo;
-    //Séries temporais do ativo
-    private ArrayList<TimeSeries> timeSeries;
-    //Parâmetros
-    private HashSet<String> nomeParametros;
-    //Parâmetros montados a partir das séries temporais
-    private HashMap<Date, ArrayList<Parametro>> parametros;
-    //Parâmetro alvo
-    private HashMap<Date, Double> parTarget;
+    //Lista de parâmetros a serem exportados
+    String[] nomeParametros;
+    //Parâmetros montados a partir das séries temporais HASHMAP
+    private HashMap<Date, double[]> parametros;
 
     //Ativo ao qual se referem os parâmetros
-    public Parametros(String ativo) {
+    public Parametros(String ativo, String[] nomeParametros) {
         this.ativo = ativo;
-        timeSeries = new ArrayList<>();
-        nomeParametros = new HashSet<>();
+        this.nomeParametros = nomeParametros;
         parametros = new HashMap<>();
-        parTarget = new HashMap<>();
-
-    }
-
-    public ArrayList<TimeSeries> getTimeSeries() {
-        return timeSeries;
     }
 
     public String getAtivo() {
         return ativo;
     }
 
-    public HashSet<String> getNomeParametros() {
+    public String[] getNomeParametros() {
         return nomeParametros;
     }
 
-    public HashMap<Date, ArrayList<Parametro>> getParametros() {
+    public HashMap getParametros() {
         return parametros;
     }
 
-    public HashMap<Date, Double> getParTarget() {
-        return parTarget;
-    }
-
     public int getNumPar() {
-        //Retorna a quantidade de parâmetros adicionados + parâmetro alvo
-        return nomeParametros.size() + 1;
+        //Retorna a quantidade de parâmetros adicionados
+        return nomeParametros.length;
     }
 
     public int getNumReg() {
@@ -70,56 +58,67 @@ public class Parametros {
         return parametros.size();
     }
 
+    public void insereSerieTemporalBrasil(TimeSeries timeSeries) throws ParametrosException {
+        insereSerieTemporal(timeSeries, "Bra");
+    }
+
+    public void insereSerieTemporalEstrangeiro(TimeSeries timeSeries) throws ParametrosException {
+        insereSerieTemporal(timeSeries, "Est");
+    }
+
     //Insere série temporal do ativo
-    public void insereSerieTemporal(TimeSeries timeSeries) throws ParametrosException {
-        //Se não possui nome
-        if (timeSeries.getName().isEmpty()) {
-            throw new ParametrosException("A série temporal não possui nome");
-        }
-        //Obtém o nome da série temporal
-        String nome = timeSeries.getName();
+    private void insereSerieTemporal(TimeSeries timeSeries, String pais) throws ParametrosException {
+
+        //Verifica a ocorrência dos parâmetros
+        int closePrice = getOcoParametro(montaNomeParametro(pais, "ClosePrice"));
+        int OpenPrice = getOcoParametro(montaNomeParametro(pais, "OpenPrice"));
+        int HighPrice = getOcoParametro(montaNomeParametro(pais, "HighPrice"));
+        int LowPrice = getOcoParametro(montaNomeParametro(pais, "LowPrice"));
+        int Volume = getOcoParametro(montaNomeParametro(pais, "Volume"));
+
         //Varre a série temporal obtida
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
             //Obtém a data da ocorrência
             Date data = timeSeries.getTick(i).getEndTime().toDate();
             //Adiciona o preço de fechamento
-            insereValor(nome, data, "ClosePrice", timeSeries.getTick(i).getClosePrice().toDouble());
+            insereValor(data, timeSeries.getTick(i).getClosePrice().toDouble(), closePrice);
             //Adiciona o preço de abertura
-            insereValor(nome, data, "OpenPrice", timeSeries.getTick(i).getOpenPrice().toDouble());
+            insereValor(data, timeSeries.getTick(i).getOpenPrice().toDouble(), OpenPrice);
             //Adiciona o maior preços
-            insereValor(nome, data, "HighPrice", timeSeries.getTick(i).getMaxPrice().toDouble());
+            insereValor(data, timeSeries.getTick(i).getMaxPrice().toDouble(), HighPrice);
             //Adiciona o menor preço
-            insereValor(nome, data, "LowPrice", timeSeries.getTick(i).getMinPrice().toDouble());
+            insereValor(data, timeSeries.getTick(i).getMinPrice().toDouble(), LowPrice);
             //Adiciona o volume
-            insereValor(nome, data, "Volume", timeSeries.getTick(i).getVolume().toDouble());
+            insereValor(data, timeSeries.getTick(i).getVolume().toDouble(), Volume);
         }
-        //Adiciona a série temporal ao controle dos parâmetros
-        this.timeSeries.add(timeSeries);
-
 
     }
-    //Insere um indicador técnico do ativo            
 
-    public void insereValor(String nameTimeSeries, Date data, String desIndicador, double valIndicador) {
+    //Insere um valor do ativo
+    public void insereValor(Date data, double valIndicador, int oco) {
 
-        //Obtém o array list da data processada
-        ArrayList<Parametro> parametro = parametros.get(data);
+        //Obtém os valores da data processada
+        double[] valores = parametros.get(data);
+
         //Se ainda não possui parâmetros associados a data
-        if (parametro == null) {
-            parametro = new ArrayList<>();
+        if (valores == null) {
+            valores = new double[nomeParametros.length];
+
+            //TODO: GAMBIARRA
+            for (int i = 0; i < valores.length; i++) {
+                valores[i] = -9999999999d;
+
+            }
         }
 
-        //
+        //Se o parâmetro possui valor inválido
         if (Double.isNaN(valIndicador)) {
             valIndicador = 0d;
         }
-
-        //Adiciona o preço de fechamento
-        parametro.add(new Parametro(nameTimeSeries + desIndicador, valIndicador));
-        insereListaParametro(nameTimeSeries + desIndicador);
-        //Adiciona os parâmetros ao HashMap
-        parametros.put(data, parametro);
-
+        //Atualiza o valor da ocorrência
+        valores[oco] = valIndicador;
+        //Devolve a ocorrência para o array
+        parametros.put(data, valores);
     }
 
     //Popula variável target
@@ -164,12 +163,14 @@ public class Parametros {
         }
     }
 
+
     //Balanceia os registros contidos nos parâmetros
     public void balance() {
 
         //Ordenado as chaves do HashMap
         SortedSet<Date> chaves = new TreeSet<>(parametros.keySet());
         Iterator<Date> iterator = chaves.iterator();
+
 
         Date dateAnt = null;
         Date dateAtu = null;
@@ -186,10 +187,18 @@ public class Parametros {
             dateAnt = dateAtu;
             dateAtu = iterator.next();
 
-            //Parametros existentes na data lida na chave
-            ArrayList<Parametro> atual = parametros.get(dateAtu);
-            //Se a ocorrência dos parâmetros possui todos os elementos
-            if (atual.size() == nomeParametros.size()) {
+
+            double[] valorAtual = parametros.get(dateAtu);
+
+            boolean faltaValores = false;
+
+            for (int i = 0; i < valorAtual.length; i++) {
+                if (valorAtual[i] == -9999999999d) {
+                    faltaValores = true;
+                }
+            }
+            //Se não falta valores
+            if (!faltaValores) {
                 continue;
             }
 
@@ -203,71 +212,49 @@ public class Parametros {
                 continue;
             }
 
-            //Parâmetro existentes no dia anterior
-            ArrayList<Parametro> anterior = parametros.get(dateAnt);
-
+            double[] valorAnt = parametros.get(dateAnt);
+            
             //Balanceia os parâmetros e inseri na ocorrência dos parâmetros
-            parametros.put(dateAtu, balanceiaParametros(anterior, atual));
+            parametros.put(dateAtu, balanceiaDados(valorAnt, valorAtual));
 
         }
     }
 
-    //Faz os parâmetros ficarem com o mesmo número de parâmetros
-    //Caso o destino não tenha um parâmetro que exista na origem, este será copiado
-    private ArrayList<Parametro> balanceiaParametros(ArrayList<Parametro> origem, ArrayList<Parametro> destino) {
+    private double[] balanceiaDados(double[] origem, double[] destino) {
 
-        //Realiza copia do array original
-        ArrayList<Parametro> retorno = new ArrayList<>();
-        retorno.addAll(destino);
-
-        //Varre o array de origem
-        for (int i = 0; i < origem.size(); i++) {
-
-            boolean existe = false;
-            //Varre o array de destino
-            for (int j = 0; j < destino.size(); j++) {
-                //Se existe o mesmo parâmetro na origem e no destino
-                if (origem.get(i).getDescricao().equals(destino.get(j).getDescricao())) {
-                    existe = true;
-                    break;
-                }
-            }
-            //Se não encontrou o parâmetro
-            if (!existe) {
-                //Insere o parâmetro para balancear
-                retorno.add(origem.get(i));
+        //Varre o destino procurando valores faltantes
+        for (int i = 0; i < destino.length; i++) {
+            //Se o destino está inválido
+            if (destino[i] == -9999999999d) {
+                destino[i] = origem[i];
             }
         }
-        return retorno;
+        return destino;
     }
 
-//Insere parâmetro alvo
-    private void insereValorTarget(Date data, double valIndicador) throws ParametrosException {
+    
+    //Retorna a ocorrência que o parâmetro deve ser inserido
+    private int getOcoParametro(String nomeParametro) throws ParametrosException {
 
-        if (parTarget.containsKey(data)) {
-            throw new ParametrosException("Não foi possível incluir o parâmetro alvo, duplicação de chave");
-        }
-        parTarget.put(data, valIndicador);
+        for (int i = 0; i < nomeParametros.length; i++) {
 
-    }
-
-    //Insere o parâmetro na lista de parametros
-    private void insereListaParametro(String nomeParametro) {
-        //Adiciona nome do parâmetro ao SET
-        nomeParametros.add(nomeParametro);
-    }
-
-    //Retorna o conteúdo do parâmetro
-    public double getValorParametro(ArrayList<Parametro> param, String nomeParametro) throws ParametrosException {
-
-        //Varre os parâmetros existentes
-        for (int i = 0; i < param.size(); i++) {
-            //Se for parâmetro correto
-            if (param.get(i).getDescricao().equals(nomeParametro)) {
-                return param.get(i).getValor();
+            if (nomeParametros[i].equals(nomeParametro)) {
+                return i;
             }
         }
-        //Se não encontrou o parâmetro insere excessão
-        throw new ParametrosException("Não foi encontrado o nome do parâmetro indicado");
+        throw new ParametrosException("Não foi encontrada a ocorrência do parâmetro indicado");
+    }
+
+    //Monta a literal de nome do parâmetro
+    public String montaNomeParametro(String pais, String parametro, int periodo) {
+        NumberFormat f = NumberFormat.getInstance();
+        f.setMaximumIntegerDigits(2);
+        f.setMinimumIntegerDigits(2);
+        return pais + "_" + parametro + "_" + f.format(periodo);
+    }
+
+    //Monta a literal de nome do parâmetro
+    public String montaNomeParametro(String pais, String parametro) {
+        return pais + "_" + parametro;
     }
 }

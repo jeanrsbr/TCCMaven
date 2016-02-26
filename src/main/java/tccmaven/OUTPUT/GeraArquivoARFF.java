@@ -4,6 +4,7 @@
  */
 package tccmaven.OUTPUT;
 
+import eu.verdelhan.ta4j.TimeSeries;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -31,39 +32,54 @@ import tccmaven.IMPORT.ImportadorException;
 public class GeraArquivoARFF {
 
     private final String extARFF = ".arff";
-    private String[] nomeTimeSeries;
+    private String ativoBrasil;
+    private String ativoEst;
 
-    public GeraArquivoARFF(String[] nomeTimeSeries) {
-        this.nomeTimeSeries = nomeTimeSeries;
+    public GeraArquivoARFF(String ativoBrasil, String ativoUsa) {
+        this.ativoBrasil = ativoBrasil;
+        this.ativoEst = ativoUsa;
     }
 
-    //Gera o arquivo ARFF com a quantidade de time series específicada
-    public String geraArquivo(int qtdTimeSeries) throws GeraArquivoARFFException, ImportadorException, ParametrosException, BaixaArquivoException {
+    //Gera o arquivo ARFF
+    public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, ParametrosException, BaixaArquivoException {
+
+
+        //Obtém a lista de ativos que devem ser importados
+        String[] nomeParametros = LeituraProperties.getInstance().leituraProperties("ind.indicadores").split(";");
 
         //Instância os parâmetros com o primeiro ativo
-        Parametros parametros = new Parametros(nomeTimeSeries[0]);
-
-        for (int i = 0; i < qtdTimeSeries; i++) {
-            //Baixa arquivo CSV e Converte arquivo para memória
-            Log.loga("Importando o ativo " + nomeTimeSeries[i]);
-            Importador importador = new Importador(nomeTimeSeries[i]);
-            parametros.insereSerieTemporal(importador.montaTimeSeries());
-        }
+        Parametros parametros = new Parametros(ativoBrasil, nomeParametros);
+        //Instância os indicadores referenciando os parâmetros
+        Indicadores indicadores = new Indicadores(parametros);
+        
+        //Baixa arquivo CSV e Converte arquivo para memória
+        Log.loga("Importando o ativo " + ativoBrasil);
+        Importador importador = new Importador(ativoBrasil);
+        TimeSeries timeseries = importador.montaTimeSeries();
+        parametros.insereSerieTemporalBrasil(timeseries);
 
         //Calcula indicadores
-        Log.loga("Serão calculados os indicadores");
-        Indicadores indicadores = new Indicadores(parametros);
-        indicadores.calculaIndicadores();
-        //Atualiza parâmetros com a inclusão dos indicadores
-        parametros = indicadores.getParametros();
+        Log.loga("Serão calculados os indicadores do ativo" + ativoBrasil);
+        indicadores.calculaIndicadoresSerie(timeseries);
 
+        //Baixa arquivo CSV e Converte arquivo para memória
+        Log.loga("Importando o ativo " + ativoEst);
+        importador = new Importador(ativoEst);
+        timeseries = importador.montaTimeSeries();
+        parametros.insereSerieTemporalEstrangeiro(timeseries);
+
+        //Calcula indicadores
+        Log.loga("Serão calculados os indicadores do ativo" + ativoEst);
+        indicadores.calculaIndicadoresSerie(timeseries);
+        
         //Filtro
         //TODO: Eliminar dados redundantes e etc
 
+        Log.loga("Iniciando ajuste da base de dados");
         //Balanceia os parâmetros (Feriados, dias sem pregão, dias sem movimento)
         parametros.balance();
-        
-        
+
+
 
         Log.loga("Será inserida a variável alvo");
         parametros.criaTarget(nomeTimeSeries[0]);
