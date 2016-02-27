@@ -8,13 +8,7 @@ import eu.verdelhan.ta4j.TimeSeries;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.NavigableSet;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  *
@@ -27,13 +21,15 @@ public class Parametros {
     //Lista de parâmetros a serem exportados
     String[] nomeParametros;
     //Parâmetros montados a partir das séries temporais HASHMAP
-    private HashMap<Date, double[]> parametros;
+    private TreeMap<Date, double[]> parametros;
 
     //Ativo ao qual se referem os parâmetros
     public Parametros(String ativo, String[] nomeParametros) {
         this.ativo = ativo;
         this.nomeParametros = nomeParametros;
-        parametros = new HashMap<>();
+        //Ajusta o último parâmetro para possuir o nome fixo de TARGET
+        this.nomeParametros[nomeParametros.length - 1] = "Target";
+        parametros = new TreeMap<>();
     }
 
     public String getAtivo() {
@@ -44,8 +40,8 @@ public class Parametros {
         return nomeParametros;
     }
 
-    public HashMap getParametros() {
-        return parametros;
+    public ArrayList getParametros() {
+        return new ArrayList<>(parametros.values());
     }
 
     public int getNumPar() {
@@ -122,119 +118,54 @@ public class Parametros {
     }
 
     //Popula variável target
-    public void criaTarget(String nomeTimeSeries) throws ParametrosException {
-
-        //Ordenado as chaves do HashMap
-        SortedSet<Date> chaves = new TreeSet<>(parametros.keySet());
-        Iterator<Date> iterator = chaves.iterator();
-
-        Date dateProx = null;
-        Date dateAtu = null;
-
-        //Varre as chaves
-        while (true) {
-            //Incrementa a data
-            dateAtu = dateProx;
-
-            //Se não possui um próximo elemento
-            if (!iterator.hasNext()) {
-
-                //Se não possui data atual (Primeiro registro)
-                if (dateAtu == null) {
-                    break;
-                }
-                //Insere o valor alvo (Apenas para não ficar com o último registro sem a variável TARGET
-                insereValorTarget(dateAtu, 0d);
-                break;
-            }
-
-            //Obtém a data do registro atual e do próximo
-            dateProx = iterator.next();
-
-            //Se não possui data atual (Primeiro registro)
-            if (dateAtu == null) {
-                continue;
-            }
-
-            //Obtém o valor do parâmetro posterior
-            double valor = getValorParametro(parametros.get(dateProx), nomeTimeSeries + "HighPrice");
-            //Insere o valor alvo
-            insereValorTarget(dateAtu, valor);
+    public void criaTarget(String nomeParametro) throws ParametrosException {
+        //Encontra a ocorrência do parâmetro
+        int oco = getOcoParametro(nomeParametro);
+        //Converte o TreeMap para um ArrayList
+        ArrayList<double[]> lista = new ArrayList<>(parametros.values());
+        //Varre as ocorrências da lista (Não processa a última ocorrência)
+        for (int i = 0; i < lista.size() - 1; i++) {
+            //Obtém o array de parâmetros da ocorrência atual
+            double[] par = lista.get(i);
+            //Atribuir a última ocorrência dos parâmetros os valor do parâmetro na ocorrência posterior
+            par[par.length - 1] = lista.get(i + 1)[oco];
+            //Devolve o valor a lista
+            lista.set(i, par);
         }
     }
-
 
     //Balanceia os registros contidos nos parâmetros
     public void balance() {
 
-        //Ordenado as chaves do HashMap
-        SortedSet<Date> chaves = new TreeSet<>(parametros.keySet());
-        Iterator<Date> iterator = chaves.iterator();
+        //Converte o TreeMap para um ArrayList
+        ArrayList<double[]> lista = new ArrayList<>(parametros.values());
 
+        //Varre os registros do ArrayList
+        for (int i = 0; i < lista.size(); i++) {
 
-        Date dateAnt = null;
-        Date dateAtu = null;
+            //Obtém o array de parâmetros presente na lista
+            double[] par = lista.get(i);
 
-        //Varre as chaves
-        while (true) {
-
-            //Se não possui um próximo elemento
-            if (!iterator.hasNext()) {
-                break;
-            }
-
-            //Obtém a data do registro atual e do anterior
-            dateAnt = dateAtu;
-            dateAtu = iterator.next();
-
-
-            double[] valorAtual = parametros.get(dateAtu);
-
-            boolean faltaValores = false;
-
-            for (int i = 0; i < valorAtual.length; i++) {
-                if (valorAtual[i] == -9999999999d) {
-                    faltaValores = true;
+            //Varre os parâmetros
+            for (int j = 0; j < par.length; j++) {
+                //Se estiver com conteúdo inválido pega o conteúdo da ocorrência anterior
+                if (par[j] == -9999999999d) {
+                    //Se for a primeira ocorrência
+                    if (i == 0) {
+                        //Apenas zera
+                        par[j] = 0d;
+                    } else {
+                        //Inicializa com o conteúdo da ocorrência anterior
+                        par[j] = lista.get(i - 1)[j];
+                    }
                 }
             }
-            //Se não falta valores
-            if (!faltaValores) {
-                continue;
-            }
-
-            // Se não possui data atual (Primeiro registro)
-            if (dateAnt == null) {
-                //Se o primeiro registro estiver desbalanceado, não tem de onde copiar, o registro deve ser excluído
-                parametros.remove(dateAtu);
-                //Inicializa a data atual para forçar um reinicio
-                dateAtu = null;
-                //Vai para a próxima ocorrência
-                continue;
-            }
-
-            double[] valorAnt = parametros.get(dateAnt);
-            
-            //Balanceia os parâmetros e inseri na ocorrência dos parâmetros
-            parametros.put(dateAtu, balanceiaDados(valorAnt, valorAtual));
-
+            lista.set(i, par);
         }
     }
 
-    private double[] balanceiaDados(double[] origem, double[] destino) {
-
-        //Varre o destino procurando valores faltantes
-        for (int i = 0; i < destino.length; i++) {
-            //Se o destino está inválido
-            if (destino[i] == -9999999999d) {
-                destino[i] = origem[i];
-            }
-        }
-        return destino;
-    }
-
-    
     //Retorna a ocorrência que o parâmetro deve ser inserido
-    private int getOcoParametro(String nomeParametro) throws ParametrosException {
+    public int getOcoParametro(String nomeParametro) throws ParametrosException {
 
         for (int i = 0; i < nomeParametros.length; i++) {
 

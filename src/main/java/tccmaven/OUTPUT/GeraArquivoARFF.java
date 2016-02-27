@@ -12,13 +12,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import tccmaven.DATA.Indicadores;
+import tccmaven.DATA.IndicadoresException;
 import tccmaven.MISC.LeituraProperties;
 import tccmaven.MISC.Log;
-import tccmaven.DATA.Parametro;
 import tccmaven.DATA.Parametros;
 import tccmaven.DATA.ParametrosException;
 import tccmaven.IMPORT.BaixaArquivoException;
@@ -41,7 +38,7 @@ public class GeraArquivoARFF {
     }
 
     //Gera o arquivo ARFF
-    public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, ParametrosException, BaixaArquivoException {
+    public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, ParametrosException, BaixaArquivoException, IndicadoresException {
 
 
         //Obtém a lista de ativos que devem ser importados
@@ -49,9 +46,8 @@ public class GeraArquivoARFF {
 
         //Instância os parâmetros com o primeiro ativo
         Parametros parametros = new Parametros(ativoBrasil, nomeParametros);
-        //Instância os indicadores referenciando os parâmetros
-        Indicadores indicadores = new Indicadores(parametros);
-        
+
+
         //Baixa arquivo CSV e Converte arquivo para memória
         Log.loga("Importando o ativo " + ativoBrasil);
         Importador importador = new Importador(ativoBrasil);
@@ -60,7 +56,10 @@ public class GeraArquivoARFF {
 
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo" + ativoBrasil);
-        indicadores.calculaIndicadoresSerie(timeseries);
+        //Instância os indicadores referenciando os parâmetros
+        Indicadores indicadoresBra = new Indicadores(parametros, timeseries);
+        indicadoresBra.setPaisBrasil();
+        indicadoresBra.calculaIndicadoresSerie();
 
         //Baixa arquivo CSV e Converte arquivo para memória
         Log.loga("Importando o ativo " + ativoEst);
@@ -70,19 +69,18 @@ public class GeraArquivoARFF {
 
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo" + ativoEst);
-        indicadores.calculaIndicadoresSerie(timeseries);
-        
-        //Filtro
-        //TODO: Eliminar dados redundantes e etc
+        //Instância os indicadores referenciando os parâmetros
+        Indicadores indicadoresEst = new Indicadores(parametros, timeseries);
+        indicadoresEst.setPaisEstrangeiro();
+        indicadoresEst.calculaIndicadoresSerie();
 
+        //Inicia ajustes da base de dados
         Log.loga("Iniciando ajuste da base de dados");
         //Balanceia os parâmetros (Feriados, dias sem pregão, dias sem movimento)
         parametros.balance();
 
-
-
         Log.loga("Será inserida a variável alvo");
-        parametros.criaTarget(nomeTimeSeries[0]);
+        parametros.criaTarget(nomeParametros[nomeParametros.length - 1]);
 
         //Retorna o nome do arquivo gerado
         return geraArquivo(parametros);
@@ -131,39 +129,33 @@ public class GeraArquivoARFF {
             writer.newLine();
 
 
-            //Obtém a lista de parâmetros existentes nos parâmetros
-            SortedSet<String> nomesParametros = new TreeSet<>(parametros.getNomeParametros());
-
-            for (String nomeParametro : nomesParametros) {
-                writer.write("@attribute " + nomeParametro + " numeric");
+            //Obtém o nome dos parâmetros
+            String[] nomeParametro = parametros.getNomeParametros();
+            //Imprime o nome dos parâmetros
+            for (int i = 0; i < nomeParametro.length; i++) {
+                writer.write("@attribute " + nomeParametro[i] + " numeric");
                 writer.newLine();
             }
-
-            writer.write("@attribute " + "Target" + " numeric");
-            writer.newLine();
 
             writer.newLine();
             writer.write("@data");
             writer.newLine();
 
-            //Ordenado as chaves do HashMap
-            SortedSet<Date> chaves = new TreeSet<>(parametros.getParametros().keySet());
-
-            //Percorre as chaves do array
-            for (Date chave : chaves) {
+            //Obtém a lista de parâmetros
+            ArrayList<double[]> lista = parametros.getParametros();
+            //Varre a lista de parâmetros
+            for (int i = 0; i < lista.size(); i++) {
 
                 StringBuilder linha = new StringBuilder();
-                //Parametros existentes na data lida na chave
-                ArrayList<Parametro> aux = parametros.getParametros().get(chave);
+                //Obtém os valores da lista
+                double[] valores = lista.get(i);
 
-                //Exporta na mesma ordenação dos parâmetros
-                for (String nomeParametro : nomesParametros) {
-                    linha.append(editaDouble(parametros.getValorParametro(aux, nomeParametro)));
+                for (int j = 0; j < valores.length; j++) {
+                    linha.append(editaDouble(valores[j]));
                     linha.append(",");
                 }
-
-                //Parâmetro target
-                linha.append(editaDouble(parametros.getParTarget().get(chave)));
+                //Remove a última vírgula da literal
+                linha.delete(linha.length() - 1, linha.length());
 
                 //Exporta a linha para o arquivo
                 writer.write(linha.toString());
@@ -173,6 +165,7 @@ public class GeraArquivoARFF {
             //Fecha o arquivo
             writer.close();
             return file.getAbsolutePath();
+
 
         } catch (IOException | IllegalArgumentException ex) {
             throw new GeraArquivoARFFException("Ocorreu erro no momento de gerar o arquivo ARFF", ex);
