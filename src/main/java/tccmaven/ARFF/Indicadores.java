@@ -198,7 +198,7 @@ public class Indicadores {
             Double closePrice = timeSeries.getTick(i).getClosePrice().toDouble();
             Double sMA = sMAIndicator.getValue(i).toDouble();
             Double bIAS = ((closePrice - sMA) / sMA) * 100;
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), bIAS, pais, "PVT", periodo);
+            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), bIAS, pais, "BIAS", periodo);
         }
     }
 

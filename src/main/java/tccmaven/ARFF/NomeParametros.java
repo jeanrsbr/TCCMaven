@@ -16,8 +16,8 @@ public class NomeParametros {
     private String[] nomeParametrosOriginal;
 
     public NomeParametros(String[] nomeParametros) {
-        this.nomeParametrosOriginal = nomeParametros;
-        this.nomeParametros = nomeParametros;
+        nomeParametrosOriginal = nomeParametros.clone();
+        this.nomeParametros = nomeParametros.clone();
         //Ajusta o último parâmetro para possuir o nome fixo de TARGET
         this.nomeParametros[nomeParametros.length - 1] = "Target";
     }

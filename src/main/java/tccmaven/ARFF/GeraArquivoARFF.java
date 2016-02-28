@@ -12,15 +12,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import tccmaven.ARFF.Indicadores;
-import tccmaven.ARFF.IndicadoresException;
 import tccmaven.MISC.LeituraProperties;
 import tccmaven.MISC.Log;
-import tccmaven.ARFF.InsereParametros;
-import tccmaven.ARFF.InsereParametrosException;
-import tccmaven.ARFF.ManipulaParametros;
-import tccmaven.ARFF.NomeParametros;
-import tccmaven.ARFF.NomeParametrosException;
 import tccmaven.ARFF.IMPORT.BaixaArquivoException;
 import tccmaven.ARFF.IMPORT.Importador;
 import tccmaven.ARFF.IMPORT.ImportadorException;
@@ -44,6 +37,8 @@ public class GeraArquivoARFF {
     public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, InsereParametrosException, BaixaArquivoException, IndicadoresException, NomeParametrosException {
 
 
+        //------------------------- IDENTIFICAÇÃO DOS PARAMÊTROS  --------------------
+        
         //Obtém a lista de ativos que devem ser importados
         NomeParametros nomeParametros = new NomeParametros(LeituraProperties.getInstance().leituraProperties("ind.indicadores").split(";"));
 
@@ -53,26 +48,30 @@ public class GeraArquivoARFF {
         InsereParametros insereParametros = new InsereParametros(nomeParametros);
         
         //Baixa arquivo CSV e Converte arquivo para memória
-        Log.loga("Importando o ativo " + ativoBrasil);
+        Log.loga("Importando o ativo " + ativoBrasil, "INSERÇÃO");
         Importador importador = new Importador(ativoBrasil);
         TimeSeries timeseries = importador.montaTimeSeries();
+        Log.loga("Criada série temporal do ativo " + ativoBrasil + " com " + timeseries.getTickCount() + " registros", "INSERÇÃO");
         insereParametros.insereSerieTemporalBrasil(timeseries);
-
+        Log.loga("Inseridos parâmetros do ativo " + ativoBrasil + " com " + insereParametros.getNumReg() + " registros", "INSERÇÃO");
+        
         //Calcula indicadores
-        Log.loga("Serão calculados os indicadores do ativo" + ativoBrasil);
+        Log.loga("Serão calculados os indicadores do ativo " + ativoBrasil, "INSERÇÃO");
         //Instância os indicadores referenciando os parâmetros
         Indicadores indicadoresBra = new Indicadores(insereParametros, timeseries);
         indicadoresBra.setPaisBrasil();
         indicadoresBra.calculaIndicadoresSerie();
 
         //Baixa arquivo CSV e Converte arquivo para memória
-        Log.loga("Importando o ativo " + ativoEst);
+        Log.loga("Importando o ativo " + ativoEst, "INSERÇÃO");
         importador = new Importador(ativoEst);
         timeseries = importador.montaTimeSeries();
+        Log.loga("Criada série temporal do ativo " + ativoEst + " com " + timeseries.getTickCount() + " registros", "INSERÇÃO");        
         insereParametros.insereSerieTemporalEstrangeiro(timeseries);
+        Log.loga("Inseridos parâmetros do ativo " + ativoEst + " com " + insereParametros.getNumReg() + " registros", "INSERÇÃO");
 
         //Calcula indicadores
-        Log.loga("Serão calculados os indicadores do ativo" + ativoEst);
+        Log.loga("Serão calculados os indicadores do ativo " + ativoEst, "INSERÇÃO");
         //Instância os indicadores referenciando os parâmetros
         Indicadores indicadoresEst = new Indicadores(insereParametros, timeseries);
         indicadoresEst.setPaisEstrangeiro();
@@ -87,13 +86,21 @@ public class GeraArquivoARFF {
         ManipulaParametros manipulaParametros = new ManipulaParametros(lista, ativoBrasil);
         
         //Inicia ajustes da base de dados
-        Log.loga("Iniciando ajuste da base de dados");
+        Log.loga("Iniciando ajuste da base de dados", "AJUSTE");
         //Balanceia os parâmetros (Feriados, dias sem pregão, dias sem movimento)
         manipulaParametros.balance();
-
-        Log.loga("Será inserida a variável alvo");
+        Log.loga("Será inserida a variável alvo", "AJUSTE");
         manipulaParametros.criaTarget(nomeParametros.getOcoTarget());
 
+        //------------------------- VALIDA OS PARAMETROS --------------------
+        Log.loga("Iniciando etapa de validação dos dados", "VALIDAÇÃO");
+        ValidaParametros validaParametros = new ValidaParametros(manipulaParametros.getListaParametros());
+        //Se encontrou inconsistência nas validações
+        if (!validaParametros.validaDados()){
+            throw new GeraArquivoARFFException("Foi encontrada inconsistência na geração dos parâmetros");
+        }        
+        Log.loga("Os dados estão validos", "VALIDAÇÃO");
+        
         //Retorna o nome do arquivo gerado
         return geraArquivo(manipulaParametros, nomeParametros);
     }

@@ -12,8 +12,6 @@ import tccmaven.MISC.Log;
 import tccmaven.ARFF.GeraArquivoARFFException;
 import tccmaven.ARFF.GeraArquivoARFF;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import tccmaven.ARFF.IndicadoresException;
 import tccmaven.ARFF.NomeParametrosException;
 import tccmaven.SVM.WekaSVM;

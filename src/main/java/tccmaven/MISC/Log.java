@@ -4,8 +4,6 @@
  */
 package tccmaven.MISC;
 
-import tccmaven.MISC.LeituraProperties;
-
 /**
  *
  * @author Jean-NoteI5
@@ -20,4 +18,9 @@ public class Log {
         }
     }
 
+    public static void loga(String mensagem, String titulo) {
+        if (log == 1) {
+            System.out.println("[" + String.format("%12s", titulo) + "]:" + mensagem);
+        }
+    }
 }

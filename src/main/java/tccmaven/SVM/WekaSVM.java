@@ -7,13 +7,9 @@ package tccmaven.SVM;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
-import libsvm.svm;
 import tccmaven.MISC.Log;
-import weka.classifiers.Classifier;
 import weka.classifiers.functions.LibSVM;
-import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SelectedTag;
 

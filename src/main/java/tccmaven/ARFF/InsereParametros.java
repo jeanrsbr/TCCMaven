@@ -19,7 +19,6 @@ public class InsereParametros {
     NomeParametros nomeParametros;
     //Parâmetros montados a partir das séries temporais HASHMAP
     private TreeMap<Date, double[]> parametros;
-    private int periodo;
 
     //Ativo ao qual se referem os parâmetros
     public InsereParametros(NomeParametros nomeParametros) {
@@ -29,6 +28,11 @@ public class InsereParametros {
 
     public ArrayList getParametros() {
         return new ArrayList<>(parametros.values());
+    }
+    
+    //Número de registros dos parâmetros
+    public int getNumReg(){
+        return parametros.size();
     }
 
     public void insereSerieTemporalBrasil(TimeSeries timeSeries) throws InsereParametrosException, NomeParametrosException {
