@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven.OUTPUT;
+package tccmaven.ARFF;
 
 import eu.verdelhan.ta4j.TimeSeries;
 import java.io.BufferedWriter;
@@ -12,15 +12,18 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import tccmaven.DATA.Indicadores;
-import tccmaven.DATA.IndicadoresException;
+import tccmaven.ARFF.Indicadores;
+import tccmaven.ARFF.IndicadoresException;
 import tccmaven.MISC.LeituraProperties;
 import tccmaven.MISC.Log;
-import tccmaven.DATA.Parametros;
-import tccmaven.DATA.ParametrosException;
-import tccmaven.IMPORT.BaixaArquivoException;
-import tccmaven.IMPORT.Importador;
-import tccmaven.IMPORT.ImportadorException;
+import tccmaven.ARFF.InsereParametros;
+import tccmaven.ARFF.InsereParametrosException;
+import tccmaven.ARFF.ManipulaParametros;
+import tccmaven.ARFF.NomeParametros;
+import tccmaven.ARFF.NomeParametrosException;
+import tccmaven.ARFF.IMPORT.BaixaArquivoException;
+import tccmaven.ARFF.IMPORT.Importador;
+import tccmaven.ARFF.IMPORT.ImportadorException;
 
 /**
  *
@@ -38,26 +41,27 @@ public class GeraArquivoARFF {
     }
 
     //Gera o arquivo ARFF
-    public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, ParametrosException, BaixaArquivoException, IndicadoresException {
+    public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, InsereParametrosException, BaixaArquivoException, IndicadoresException, NomeParametrosException {
 
 
         //Obtém a lista de ativos que devem ser importados
-        String[] nomeParametros = LeituraProperties.getInstance().leituraProperties("ind.indicadores").split(";");
+        NomeParametros nomeParametros = new NomeParametros(LeituraProperties.getInstance().leituraProperties("ind.indicadores").split(";"));
 
+        //------------------------- INSERÇÃO DOS PARAMETROS --------------------
+        
         //Instância os parâmetros com o primeiro ativo
-        Parametros parametros = new Parametros(ativoBrasil, nomeParametros);
-
-
+        InsereParametros insereParametros = new InsereParametros(nomeParametros);
+        
         //Baixa arquivo CSV e Converte arquivo para memória
         Log.loga("Importando o ativo " + ativoBrasil);
         Importador importador = new Importador(ativoBrasil);
         TimeSeries timeseries = importador.montaTimeSeries();
-        parametros.insereSerieTemporalBrasil(timeseries);
+        insereParametros.insereSerieTemporalBrasil(timeseries);
 
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo" + ativoBrasil);
         //Instância os indicadores referenciando os parâmetros
-        Indicadores indicadoresBra = new Indicadores(parametros, timeseries);
+        Indicadores indicadoresBra = new Indicadores(insereParametros, timeseries);
         indicadoresBra.setPaisBrasil();
         indicadoresBra.calculaIndicadoresSerie();
 
@@ -65,29 +69,37 @@ public class GeraArquivoARFF {
         Log.loga("Importando o ativo " + ativoEst);
         importador = new Importador(ativoEst);
         timeseries = importador.montaTimeSeries();
-        parametros.insereSerieTemporalEstrangeiro(timeseries);
+        insereParametros.insereSerieTemporalEstrangeiro(timeseries);
 
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo" + ativoEst);
         //Instância os indicadores referenciando os parâmetros
-        Indicadores indicadoresEst = new Indicadores(parametros, timeseries);
+        Indicadores indicadoresEst = new Indicadores(insereParametros, timeseries);
         indicadoresEst.setPaisEstrangeiro();
         indicadoresEst.calculaIndicadoresSerie();
 
+        
+        //------------------------- AJUSTE DOS PARAMETROS --------------------
+        
+        ArrayList<double[]> lista = insereParametros.getParametros();
+        
+        //Cria lista dos parâmetros
+        ManipulaParametros manipulaParametros = new ManipulaParametros(lista, ativoBrasil);
+        
         //Inicia ajustes da base de dados
         Log.loga("Iniciando ajuste da base de dados");
         //Balanceia os parâmetros (Feriados, dias sem pregão, dias sem movimento)
-        parametros.balance();
+        manipulaParametros.balance();
 
         Log.loga("Será inserida a variável alvo");
-        parametros.criaTarget(nomeParametros[nomeParametros.length - 1]);
+        manipulaParametros.criaTarget(nomeParametros.getOcoTarget());
 
         //Retorna o nome do arquivo gerado
-        return geraArquivo(parametros);
+        return geraArquivo(manipulaParametros, nomeParametros);
     }
 
     //Gera arquivo ARFF
-    private String geraArquivo(Parametros parametros) throws GeraArquivoARFFException, ParametrosException {
+    private String geraArquivo(ManipulaParametros manipulaParametros, NomeParametros nomeParametros) throws GeraArquivoARFFException, InsereParametrosException {
 
 
         try {
@@ -102,7 +114,7 @@ public class GeraArquivoARFF {
             }
 
             //Abre o arquivo
-            File file = new File(diretorio + parametros.getAtivo() + extARFF);
+            File file = new File(diretorio + manipulaParametros.getAtivo() + extARFF);
             Log.loga("Arquivo ARFF: " + file.getAbsolutePath());
 
             FileOutputStream arquivoGravacao = new FileOutputStream(file);
@@ -113,7 +125,7 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.write("%");
             writer.newLine();
-            writer.write(new String("% The data provided are daily stock prices from #INICIO# through #FIM#, for #ATIVO#.").replaceAll("#INICIO#", LeituraProperties.getInstance().leituraProperties("prop.DataIni")).replaceAll("#FIM#", LeituraProperties.getInstance().leituraProperties("prop.DataFim")).replaceAll("#ATIVO#", parametros.getAtivo()));
+            writer.write(new String("% The data provided are daily stock prices from #INICIO# through #FIM#, for #ATIVO#.").replaceAll("#INICIO#", LeituraProperties.getInstance().leituraProperties("prop.DataIni")).replaceAll("#FIM#", LeituraProperties.getInstance().leituraProperties("prop.DataFim")).replaceAll("#ATIVO#", manipulaParametros.getAtivo()));
             writer.newLine();
             writer.write("%");
             writer.newLine();
@@ -121,19 +133,16 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.write("% http://real-chart.finance.yahoo.com ");
             writer.newLine();
-            writer.write(new String("% Characteristics: #CASES# cases, #ATTRIB# continuous attributes").replaceAll("#CASES#", Integer.toString(parametros.getNumReg())).replaceAll("#ATTRIB#", Integer.toString(parametros.getNumPar())));
+            writer.write(new String("% Characteristics: #CASES# cases, #ATTRIB# continuous attributes").replaceAll("#CASES#", Integer.toString(manipulaParametros.getNumReg())).replaceAll("#ATTRIB#", Integer.toString(nomeParametros.getNumPar())));
             writer.newLine();
             writer.newLine();
             writer.write("@relation stock");
             writer.newLine();
             writer.newLine();
 
-
-            //Obtém o nome dos parâmetros
-            String[] nomeParametro = parametros.getNomeParametros();
             //Imprime o nome dos parâmetros
-            for (int i = 0; i < nomeParametro.length; i++) {
-                writer.write("@attribute " + nomeParametro[i] + " numeric");
+            for (int i = 0; i < nomeParametros.getNumPar(); i++) {
+                writer.write("@attribute " + nomeParametros.getNomeParametros()[i] + " numeric");
                 writer.newLine();
             }
 
@@ -142,7 +151,7 @@ public class GeraArquivoARFF {
             writer.newLine();
 
             //Obtém a lista de parâmetros
-            ArrayList<double[]> lista = parametros.getParametros();
+            ArrayList<double[]> lista = manipulaParametros.getListaParametros();
             //Varre a lista de parâmetros
             for (int i = 0; i < lista.size(); i++) {
 

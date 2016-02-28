@@ -2,7 +2,7 @@
  * TCC
  * CopyRight Rech Informática Ltda. Todos os direitos reservados.
  */
-package tccmaven.IMPORT;
+package tccmaven.ARFF.IMPORT;
 
 /**
  * Descrição da classe.

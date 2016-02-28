@@ -5,13 +5,17 @@
 package tccmaven;
 
 import tccmaven.MISC.LeituraProperties;
-import tccmaven.DATA.ParametrosException;
-import tccmaven.IMPORT.BaixaArquivoException;
-import tccmaven.IMPORT.ImportadorException;
+import tccmaven.ARFF.InsereParametrosException;
+import tccmaven.ARFF.IMPORT.BaixaArquivoException;
+import tccmaven.ARFF.IMPORT.ImportadorException;
 import tccmaven.MISC.Log;
-import tccmaven.OUTPUT.GeraArquivoARFFException;
-import tccmaven.OUTPUT.GeraArquivoARFF;
+import tccmaven.ARFF.GeraArquivoARFFException;
+import tccmaven.ARFF.GeraArquivoARFF;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import tccmaven.ARFF.IndicadoresException;
+import tccmaven.ARFF.NomeParametrosException;
 import tccmaven.SVM.WekaSVM;
 import tccmaven.SVM.WekaSVMException;
 
@@ -36,10 +40,6 @@ public class Main {
                 return;
             }
 
-
-            
-            
-            
             //Obtém a lista de ativos que devem ser importados
             String[] ativos = LeituraProperties.getInstance().leituraProperties("prop.ativos").split("#");
 
@@ -63,7 +63,7 @@ public class Main {
                 System.out.println("Desvio padrão: " + resultado);
 
             }
-        } catch (ParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | WekaSVMException ex) {
+        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | WekaSVMException | IndicadoresException | NomeParametrosException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }

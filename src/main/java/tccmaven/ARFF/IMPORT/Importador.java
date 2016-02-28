@@ -2,8 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven.IMPORT;
+package tccmaven.ARFF.IMPORT;
 
+import tccmaven.ARFF.IMPORT.BaixaArquivoException;
+import tccmaven.ARFF.IMPORT.BaixaArquivo;
 import eu.verdelhan.ta4j.Tick;
 import eu.verdelhan.ta4j.TimeSeries;
 import java.io.BufferedReader;

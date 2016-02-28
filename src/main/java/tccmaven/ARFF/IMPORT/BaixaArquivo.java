@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven.IMPORT;
+package tccmaven.ARFF.IMPORT;
 
 import tccmaven.MISC.Log;
 import java.io.BufferedReader;
