@@ -4,6 +4,14 @@
  */
 package tccmaven.ARFF;
 
+import tccmaven.ARFF.PARAMETROS.IndicadoresException;
+import tccmaven.ARFF.PARAMETROS.Indicadores;
+import tccmaven.ARFF.PARAMETROS.NomeParametros;
+import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
+import tccmaven.ARFF.PARAMETROS.InsereParametros;
+import tccmaven.ARFF.PARAMETROS.InsereParametrosException;
+import tccmaven.ARFF.PARAMETROS.ValidaParametros;
+import tccmaven.ARFF.PARAMETROS.ManipulaParametros;
 import eu.verdelhan.ta4j.TimeSeries;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -34,27 +42,30 @@ public class GeraArquivoARFF {
     }
 
     //Gera o arquivo ARFF
-    public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, InsereParametrosException, BaixaArquivoException, IndicadoresException, NomeParametrosException {
-
+    public String geraArquivo() throws GeraArquivoARFFException, ImportadorException, InsereParametrosException,
+            BaixaArquivoException, IndicadoresException, NomeParametrosException {
 
         //------------------------- IDENTIFICAÇÃO DOS PARAMÊTROS  --------------------
-        
         //Obtém a lista de ativos que devem ser importados
-        NomeParametros nomeParametros = new NomeParametros(LeituraProperties.getInstance().leituraProperties("ind.indicadores").split(";"));
+        NomeParametros nomeParametros = new NomeParametros(LeituraProperties.getInstance().
+                leituraProperties("ind.indicadores").split(";"));
 
         //------------------------- INSERÇÃO DOS PARAMETROS --------------------
-        
         //Instância os parâmetros com o primeiro ativo
         InsereParametros insereParametros = new InsereParametros(nomeParametros);
-        
+
         //Baixa arquivo CSV e Converte arquivo para memória
         Log.loga("Importando o ativo " + ativoBrasil, "INSERÇÃO");
         Importador importador = new Importador(ativoBrasil);
         TimeSeries timeseries = importador.montaTimeSeries();
-        Log.loga("Criada série temporal do ativo " + ativoBrasil + " com " + timeseries.getTickCount() + " registros", "INSERÇÃO");
+        Log.
+                loga("Criada série temporal do ativo " + ativoBrasil + " com " + timeseries.getTickCount() +
+                        " registros", "INSERÇÃO");
         insereParametros.insereSerieTemporalBrasil(timeseries);
-        Log.loga("Inseridos parâmetros do ativo " + ativoBrasil + " com " + insereParametros.getNumReg() + " registros", "INSERÇÃO");
-        
+        Log.
+                loga("Inseridos parâmetros do ativo " + ativoBrasil + " com " + insereParametros.getNumReg() +
+                        " registros", "INSERÇÃO");
+
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo " + ativoBrasil, "INSERÇÃO");
         //Instância os indicadores referenciando os parâmetros
@@ -66,7 +77,7 @@ public class GeraArquivoARFF {
         Log.loga("Importando o ativo " + ativoEst, "INSERÇÃO");
         importador = new Importador(ativoEst);
         timeseries = importador.montaTimeSeries();
-        Log.loga("Criada série temporal do ativo " + ativoEst + " com " + timeseries.getTickCount() + " registros", "INSERÇÃO");        
+        Log.loga("Criada série temporal do ativo " + ativoEst + " com " + timeseries.getTickCount() + " registros", "INSERÇÃO");
         insereParametros.insereSerieTemporalEstrangeiro(timeseries);
         Log.loga("Inseridos parâmetros do ativo " + ativoEst + " com " + insereParametros.getNumReg() + " registros", "INSERÇÃO");
 
@@ -77,14 +88,12 @@ public class GeraArquivoARFF {
         indicadoresEst.setPaisEstrangeiro();
         indicadoresEst.calculaIndicadoresSerie();
 
-        
         //------------------------- AJUSTE DOS PARAMETROS --------------------
-        
         ArrayList<double[]> lista = insereParametros.getParametros();
-        
+
         //Cria lista dos parâmetros
         ManipulaParametros manipulaParametros = new ManipulaParametros(lista, ativoBrasil);
-        
+
         //Inicia ajustes da base de dados
         Log.loga("Iniciando ajuste da base de dados", "AJUSTE");
         //Balanceia os parâmetros (Feriados, dias sem pregão, dias sem movimento)
@@ -93,21 +102,24 @@ public class GeraArquivoARFF {
         manipulaParametros.criaTarget(nomeParametros.getOcoTarget());
 
         //------------------------- VALIDA OS PARAMETROS --------------------
-        Log.loga("Iniciando etapa de validação dos dados", "VALIDAÇÃO");
-        ValidaParametros validaParametros = new ValidaParametros(manipulaParametros.getListaParametros());
-        //Se encontrou inconsistência nas validações
-        if (!validaParametros.validaDados()){
-            throw new GeraArquivoARFFException("Foi encontrada inconsistência na geração dos parâmetros");
-        }        
-        Log.loga("Os dados estão validos", "VALIDAÇÃO");
-        
+        int valida = Integer.parseInt(LeituraProperties.getInstance().leituraProperties("prop.valida"));
+        //Se deve validar
+        if (valida == 1) {
+            Log.loga("Iniciando etapa de validação dos dados", "VALIDAÇÃO");
+            ValidaParametros validaParametros = new ValidaParametros(manipulaParametros.getListaParametros(), nomeParametros);
+            //Se encontrou inconsistência nas validações
+            if (!validaParametros.validaDados()) {
+                throw new GeraArquivoARFFException("Foi encontrada inconsistência na geração dos parâmetros");
+            }
+            Log.loga("Os dados estão validos", "VALIDAÇÃO");
+        }
         //Retorna o nome do arquivo gerado
         return geraArquivo(manipulaParametros, nomeParametros);
     }
 
     //Gera arquivo ARFF
-    private String geraArquivo(ManipulaParametros manipulaParametros, NomeParametros nomeParametros) throws GeraArquivoARFFException, InsereParametrosException {
-
+    private String geraArquivo(ManipulaParametros manipulaParametros, NomeParametros nomeParametros) throws
+            GeraArquivoARFFException, InsereParametrosException {
 
         try {
 
@@ -132,7 +144,11 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.write("%");
             writer.newLine();
-            writer.write(new String("% The data provided are daily stock prices from #INICIO# through #FIM#, for #ATIVO#.").replaceAll("#INICIO#", LeituraProperties.getInstance().leituraProperties("prop.DataIni")).replaceAll("#FIM#", LeituraProperties.getInstance().leituraProperties("prop.DataFim")).replaceAll("#ATIVO#", manipulaParametros.getAtivo()));
+            writer.
+                    write(new String("% The data provided are daily stock prices from #INICIO# through #FIM#, for #ATIVO#.").
+                            replaceAll("#INICIO#", LeituraProperties.getInstance().leituraProperties("prop.DataIni")).
+                            replaceAll("#FIM#", LeituraProperties.getInstance().leituraProperties("prop.DataFim")).
+                            replaceAll("#ATIVO#", manipulaParametros.getAtivo()));
             writer.newLine();
             writer.write("%");
             writer.newLine();
@@ -140,7 +156,9 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.write("% http://real-chart.finance.yahoo.com ");
             writer.newLine();
-            writer.write(new String("% Characteristics: #CASES# cases, #ATTRIB# continuous attributes").replaceAll("#CASES#", Integer.toString(manipulaParametros.getNumReg())).replaceAll("#ATTRIB#", Integer.toString(nomeParametros.getNumPar())));
+            writer.write(new String("% Characteristics: #CASES# cases, #ATTRIB# continuous attributes").
+                    replaceAll("#CASES#", Integer.toString(manipulaParametros.getNumReg())).
+                    replaceAll("#ATTRIB#", Integer.toString(nomeParametros.getNumPar())));
             writer.newLine();
             writer.newLine();
             writer.write("@relation stock");
@@ -181,7 +199,6 @@ public class GeraArquivoARFF {
             //Fecha o arquivo
             writer.close();
             return file.getAbsolutePath();
-
 
         } catch (IOException | IllegalArgumentException ex) {
             throw new GeraArquivoARFFException("Ocorreu erro no momento de gerar o arquivo ARFF", ex);

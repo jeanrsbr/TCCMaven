@@ -2,8 +2,11 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tccmaven.ARFF;
+package tccmaven.ARFF.PARAMETROS;
 
+import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
+import tccmaven.ARFF.PARAMETROS.InsereParametrosException;
+import tccmaven.ARFF.PARAMETROS.InsereParametros;
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.oscillators.StochasticOscillatorDIndicator;
 import eu.verdelhan.ta4j.indicators.oscillators.StochasticOscillatorKIndicator;

@@ -50,7 +50,7 @@ public class WekaSVM {
             Instances dataSet = buildBase();
 
             int trainSize = (int) Math.round(dataSet.numInstances() * 70 / 100);
-            int testSize = dataSet.numInstances() - trainSize;
+            int testSize = dataSet.numInstances() - trainSize - 1;
 
             Instances train = new Instances(dataSet, 0, trainSize);
             Instances test = new Instances(dataSet, trainSize, testSize);

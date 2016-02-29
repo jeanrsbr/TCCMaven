@@ -5,15 +5,15 @@
 package tccmaven;
 
 import tccmaven.MISC.LeituraProperties;
-import tccmaven.ARFF.InsereParametrosException;
+import tccmaven.ARFF.PARAMETROS.InsereParametrosException;
 import tccmaven.ARFF.IMPORT.BaixaArquivoException;
 import tccmaven.ARFF.IMPORT.ImportadorException;
 import tccmaven.MISC.Log;
 import tccmaven.ARFF.GeraArquivoARFFException;
 import tccmaven.ARFF.GeraArquivoARFF;
 import java.io.IOException;
-import tccmaven.ARFF.IndicadoresException;
-import tccmaven.ARFF.NomeParametrosException;
+import tccmaven.ARFF.PARAMETROS.IndicadoresException;
+import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
 import tccmaven.SVM.WekaSVM;
 import tccmaven.SVM.WekaSVMException;
 
