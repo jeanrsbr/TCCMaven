@@ -56,10 +56,7 @@ public class Main {
 
                 //Executar algoritmo SVM
                 WekaSVM wekaSVM = new WekaSVM(arquivoARFF);
-                double resultado = wekaSVM.perfomanceAnalysis();
-
-                System.out.println("Desvio padrão: " + resultado);
-
+                wekaSVM.perfomanceAnalysis();
             }
         } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | WekaSVMException | IndicadoresException | NomeParametrosException ex) {
             System.out.println(ex.getMessage());

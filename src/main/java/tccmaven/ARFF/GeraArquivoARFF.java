@@ -58,13 +58,11 @@ public class GeraArquivoARFF {
         Log.loga("Importando o ativo " + ativoBrasil, "INSERÇÃO");
         Importador importador = new Importador(ativoBrasil);
         TimeSeries timeseries = importador.montaTimeSeries();
-        Log.
-                loga("Criada série temporal do ativo " + ativoBrasil + " com " + timeseries.getTickCount() +
-                        " registros", "INSERÇÃO");
+        Log.loga("Criada série temporal do ativo " + ativoBrasil + " com " + timeseries.getTickCount()
+                + " registros", "INSERÇÃO");
         insereParametros.insereSerieTemporalBrasil(timeseries);
-        Log.
-                loga("Inseridos parâmetros do ativo " + ativoBrasil + " com " + insereParametros.getNumReg() +
-                        " registros", "INSERÇÃO");
+        Log.loga("Inseridos parâmetros do ativo " + ativoBrasil + " com " + insereParametros.getNumReg()
+                + " registros", "INSERÇÃO");
 
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo " + ativoBrasil, "INSERÇÃO");
@@ -146,9 +144,9 @@ public class GeraArquivoARFF {
             writer.newLine();
             writer.
                     write(new String("% The data provided are daily stock prices from #INICIO# through #FIM#, for #ATIVO#.").
-                            replaceAll("#INICIO#", LeituraProperties.getInstance().leituraProperties("prop.DataIni")).
-                            replaceAll("#FIM#", LeituraProperties.getInstance().leituraProperties("prop.DataFim")).
-                            replaceAll("#ATIVO#", manipulaParametros.getAtivo()));
+                    replaceAll("#INICIO#", LeituraProperties.getInstance().leituraProperties("prop.DataIni")).
+                    replaceAll("#FIM#", LeituraProperties.getInstance().leituraProperties("prop.DataFim")).
+                    replaceAll("#ATIVO#", manipulaParametros.getAtivo()));
             writer.newLine();
             writer.write("%");
             writer.newLine();

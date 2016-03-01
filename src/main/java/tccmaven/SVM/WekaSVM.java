@@ -10,8 +10,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import tccmaven.MISC.Log;
 import weka.classifiers.functions.LibSVM;
+import weka.classifiers.meta.CVParameterSelection;
 import weka.core.Instances;
 import weka.core.SelectedTag;
+import weka.core.Utils;
 
 /**
  *
@@ -43,7 +45,7 @@ public class WekaSVM {
     }
 
     //Realiza o teste de performance do modelo construído
-    public double perfomanceAnalysis() throws WekaSVMException {
+    public void perfomanceAnalysis() throws WekaSVMException {
 
         try {
             //Monta base completa
@@ -60,6 +62,15 @@ public class WekaSVM {
             //Constroi modelo
             LibSVM svm = buildModel(train);
 
+            CVParameterSelection ps = new CVParameterSelection();
+            ps.setClassifier(svm);
+            ps.setNumFolds(10);  // using 5-fold CV
+            ps.addCVParameter("G 0 10 100");
+            // build and output best options
+            ps.buildClassifier(train);
+            System.out.println(Utils.joinOptions(ps.getBestClassifierOptions()));
+
+
             double[] percentualAcerto = new double[test.numInstances()];
             //Percorre o arquivo zerando o parâmetro alvo
             for (int i = 0; i < test.numInstances(); i++) {
@@ -67,12 +78,14 @@ public class WekaSVM {
                 double real = test.instance(i).classValue();
                 //Valor predito
                 double predict = svm.classifyInstance(test.instance(i));
+
+                System.out.println("Valor real: " + real + " Valor predito: " + predict + " Diferença: " + (real - predict));
+
                 //Ajusta a tabela de percentual de acerto
                 percentualAcerto[i] = (predict * 100) / real;
             }
 
             Log.loga("Desvio padrão: " + desvioPadrao(percentualAcerto));
-            return desvioPadrao(percentualAcerto);
 
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
@@ -91,7 +104,7 @@ public class WekaSVM {
             svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
             svm.setCacheSize(100);
             svm.setCoef0(0.0);
-            svm.setCost(1.0);
+            svm.setCost(9.9091);
             svm.setDebug(false);
             svm.setDegree(3);
             svm.setDoNotReplaceMissingValues(false);
