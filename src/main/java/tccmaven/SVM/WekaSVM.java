@@ -62,13 +62,13 @@ public class WekaSVM {
             //Constroi modelo
             LibSVM svm = buildModel(train);
 
-            CVParameterSelection ps = new CVParameterSelection();
-            ps.setClassifier(svm);
-            ps.setNumFolds(10);  // using 5-fold CV
-            ps.addCVParameter("G 0 10 100");
-            // build and output best options
-            ps.buildClassifier(train);
-            System.out.println(Utils.joinOptions(ps.getBestClassifierOptions()));
+//            CVParameterSelection ps = new CVParameterSelection();
+//            ps.setClassifier(svm);
+//            ps.setNumFolds(10);  // using 5-fold CV
+//            ps.addCVParameter("G 0 10 100");
+//            // build and output best options
+//            ps.buildClassifier(train);
+//            System.out.println(Utils.joinOptions(ps.getBestClassifierOptions()));
 
 
             double[] percentualAcerto = new double[test.numInstances()];
@@ -79,13 +79,13 @@ public class WekaSVM {
                 //Valor predito
                 double predict = svm.classifyInstance(test.instance(i));
 
-                System.out.println("Valor real: " + real + " Valor predito: " + predict + " Diferença: " + (real - predict));
+                Log.loga("Valor real: " + real + " Valor predito: " + predict + " Diferença: " + (real - predict));
 
                 //Ajusta a tabela de percentual de acerto
                 percentualAcerto[i] = (predict * 100) / real;
             }
 
-            Log.loga("Desvio padrão: " + desvioPadrao(percentualAcerto));
+            System.out.println("Desvio padrão: " + desvioPadrao(percentualAcerto));
 
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
