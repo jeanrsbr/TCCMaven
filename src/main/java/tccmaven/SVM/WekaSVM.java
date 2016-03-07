@@ -9,8 +9,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import tccmaven.MISC.Log;
+import weka.classifiers.Classifier;
 import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.CVParameterSelection;
+import weka.classifiers.meta.GridSearch;
 import weka.core.Instances;
 import weka.core.SelectedTag;
 import weka.core.Utils;
@@ -59,8 +61,16 @@ public class WekaSVM {
 
             train.setClassIndex(train.numAttributes() - 1);
             test.setClassIndex(test.numAttributes() - 1);
+
+
+
+
             //Constroi modelo
             LibSVM svm = buildModel(train);
+
+
+
+
 
 //            CVParameterSelection ps = new CVParameterSelection();
 //            ps.setClassifier(svm);
@@ -100,36 +110,67 @@ public class WekaSVM {
         try {
 
 
-            LibSVM svm = new LibSVM();
-            svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
-            svm.setCacheSize(100);
-            svm.setCoef0(0.0);
-            svm.setCost(9.9091);
-            svm.setDebug(false);
-            svm.setDegree(3);
-            svm.setDoNotReplaceMissingValues(false);
-            svm.setEps(0.001);
-            svm.setGamma(0.0);
-            svm.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_RBF, LibSVM.TAGS_KERNELTYPE));
-            svm.setLoss(0.1);
-            svm.setNormalize(true);
-            svm.setNu(0.5);
-            svm.setProbabilityEstimates(false);
-            svm.setShrinking(true);
-            svm.setWeights("");
-            svm.setDebug(false);
+            LibSVM svmIni = new LibSVM();
+            svmIni.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
+            svmIni.setCacheSize(100);
+            svmIni.setCoef0(0.0);
+            svmIni.setCost(1.0);
+            svmIni.setDebug(false);
+            svmIni.setDegree(3);
+            svmIni.setDoNotReplaceMissingValues(false);
+            svmIni.setEps(0.001);
+            svmIni.setGamma(0.0);
+            svmIni.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_RBF, LibSVM.TAGS_KERNELTYPE));
+            svmIni.setLoss(0.1);
+            svmIni.setNormalize(true);
+            svmIni.setNu(0.5);
+            svmIni.setProbabilityEstimates(false);
+            svmIni.setShrinking(true);
+            svmIni.setWeights("");
+            svmIni.setDebug(false);
 
             PrintStream def = new PrintStream(System.out);
             System.setOut(new PrintStream("output_weka.txt"));
 
-            svm.buildClassifier(train);
+            svmIni.buildClassifier(train);
 
+            //
+            LibSVM svmFim = GridSearch(svmIni, train);
+
+            
             System.setOut(def);
 
-            return svm;
+            return svmFim;
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
         }
+    }
+
+    private LibSVM GridSearch(LibSVM svm, Instances train) throws Exception {
+        
+        GridSearch gridSearch = new GridSearch();
+        gridSearch.setClassifier(svm);
+        gridSearch.setEvaluation(new SelectedTag(GridSearch.EVALUATION_ACC, GridSearch.TAGS_EVALUATION));
+
+        //evalaute C 1,2,16
+        gridSearch.setXProperty("classifier.c");
+        gridSearch.setXMin(1);
+        gridSearch.setXMax(16);
+        gridSearch.setXStep(1);
+        gridSearch.setXExpression("I");
+
+        // evaluate gamma s 10^-5, 10^-4,..,10^2.
+        gridSearch.setYProperty("classifier.kernel.gamma");
+        gridSearch.setYMin(-5);
+        gridSearch.setYMax(2);
+        gridSearch.setYStep(1);
+        gridSearch.setYBase(10);
+        gridSearch.setYExpression("pow(BASE,I)");
+        
+        gridSearch.buildClassifier(train);
+        
+        return (LibSVM) gridSearch.getBestClassifier();
+        
     }
 
     //Monta a base de dados
