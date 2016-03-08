@@ -2,20 +2,27 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+//            CVParameterSelection ps = new CVParameterSelection();
+//            ps.setClassifier(svm);
+//            ps.setNumFolds(10);  // using 5-fold CV
+//            ps.addCVParameter("G 0 10 100");
+//            // build and output best options
+//            ps.buildClassifier(train);
+//            System.out.println(Utils.joinOptions(ps.getBestClassifierOptions()));
 package tccmaven.SVM;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import tccmaven.MISC.Log;
-import weka.classifiers.Classifier;
 import weka.classifiers.functions.LibSVM;
-import weka.classifiers.meta.CVParameterSelection;
 import weka.classifiers.meta.GridSearch;
 import weka.core.Instances;
 import weka.core.SelectedTag;
-import weka.core.Utils;
 
 /**
  *
@@ -29,16 +36,21 @@ public class WekaSVM {
     private double difValorPredito = 0;
     //Percentual de diferença entre o dia atual e o predito
     private double percentualValorPredito = 0;
+
     private String arqARFF;
+    private String nomArqARFF;
+    private Instances dataSet;
 
     public WekaSVM(String arqARFF) throws WekaSVMException {
+
         this.arqARFF = arqARFF;
+        dataSet = buildBase();
+        nomArqARFF = getName();
     }
 
     //Realiza a predição da cotação de fechamento do próximo dia
     public void prediction() throws WekaSVMException {
 
-
         try {
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
@@ -46,131 +58,176 @@ public class WekaSVM {
 
     }
 
-    //Realiza o teste de performance do modelo construído
+    //Realiza os testes de performance
     public void perfomanceAnalysis() throws WekaSVMException {
 
+
+        try{
+        //Abre o arquivo CSV de resultados
+        File file = new File("teste/resultado.csv");
+        FileOutputStream arquivoGravacao = new FileOutputStream(file);
+        OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);
+        BufferedWriter resultado = new BufferedWriter(strWriter);
+
+        //Cabeçalho
+        resultado.write("ativo;grid_search;tam_treino;valor_real;valor_predito;diff;perc_acerto");
+        resultado.newLine();
+
+        //Realiza testes com os últimos 20 dias da amostra, com diversos tamanhos
+        for (int i = 2; i < 22; i++) {
+
+            perfomanceAnalysis(i, 50, resultado);
+            perfomanceAnalysis(i, 100, resultado);
+            perfomanceAnalysis(i, 150, resultado);
+
+        }
+
+        resultado.flush();
+        resultado.close();
+        } catch(IOException ex){
+            throw new WekaSVMException("Não foi possível criar o arquivo de resultado");
+        }
+    }
+
+    //Realiza o teste de performance do modelo construído
+    private void perfomanceAnalysis(int dia, int trainSize, BufferedWriter resultado) throws WekaSVMException {
+
         try {
-            //Monta base completa
-            Instances dataSet = buildBase();
 
-            int trainSize = (int) Math.round(dataSet.numInstances() * 70 / 100);
-            int testSize = dataSet.numInstances() - trainSize - 1;
+            //Se o SET de treino for maior que o SET disponível
+            if ((trainSize + dia) > dataSet.numInstances()) {
+                throw new WekaSVMException("Set de treino muito grande");
+            }
 
-            Instances train = new Instances(dataSet, 0, trainSize);
-            Instances test = new Instances(dataSet, trainSize, testSize);
+            Instances train = new Instances(dataSet, dataSet.numInstances() - dia - trainSize, trainSize);
+            Instances test = new Instances(dataSet, dataSet.numInstances() - dia, 1);
 
             train.setClassIndex(train.numAttributes() - 1);
             test.setClassIndex(test.numAttributes() - 1);
 
+            LibSVM svm;
 
+            //Constroi modelo sem Grid Search
+            svm = buildSVM();
+            constroiClassificador(svm, train);
+            resultado.write(testaClasse(test, svm, "Não", trainSize));
+            resultado.newLine();
 
-
-            //Constroi modelo
-            LibSVM svm = buildModel(train);
-
-
-
-
-
-//            CVParameterSelection ps = new CVParameterSelection();
-//            ps.setClassifier(svm);
-//            ps.setNumFolds(10);  // using 5-fold CV
-//            ps.addCVParameter("G 0 10 100");
-//            // build and output best options
-//            ps.buildClassifier(train);
-//            System.out.println(Utils.joinOptions(ps.getBestClassifierOptions()));
-
-
-            double[] percentualAcerto = new double[test.numInstances()];
-            //Percorre o arquivo zerando o parâmetro alvo
-            for (int i = 0; i < test.numInstances(); i++) {
-                //Obtém o valor real do atributo
-                double real = test.instance(i).classValue();
-                //Valor predito
-                double predict = svm.classifyInstance(test.instance(i));
-
-                Log.loga("Valor real: " + real + " Valor predito: " + predict + " Diferença: " + (real - predict));
-
-                //Ajusta a tabela de percentual de acerto
-                percentualAcerto[i] = (predict * 100) / real;
-            }
-
-            System.out.println("Desvio padrão: " + desvioPadrao(percentualAcerto));
+            //Constroi modelo com Grid Search antes
+            svm = buildSVM();
+            svm = GridSearch(svm, train);
+            constroiClassificador(svm, train);
+            resultado.write(testaClasse(test, svm, "Sim", trainSize));
+            resultado.newLine();
 
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
         }
-
-
-
 
     }
 
-    private LibSVM buildModel(Instances train) throws WekaSVMException {
+    //Recebe a instância de teste e o modelo
+    private String testaClasse(Instances test, LibSVM model, String gridSearch, int trainSize) throws Exception {
+        double percentualAcerto;
+        //Obtém o valor real do atributo
+        double real = test.instance(0).classValue();
+        //Valor predito
+        double predict = model.classifyInstance(test.instance(0));
+
+        //Ajusta a tabela de percentual de acerto
+        percentualAcerto = (predict * 100) / real;
+
+        StringBuilder linha = new StringBuilder();
+        linha.append(nomArqARFF);
+        linha.append(";");
+        linha.append(gridSearch);
+        linha.append(";");
+        linha.append(trainSize);
+        linha.append(";");
+        linha.append(real);
+        linha.append(";");
+        linha.append(predict);
+        linha.append(";");
+        linha.append(real - predict);
+        linha.append(";");
+        linha.append(percentualAcerto);
+        //Retorna a linha montada
+        return linha.toString();
+
+    }
+
+    private LibSVM buildSVM() throws WekaSVMException {
         try {
 
+            LibSVM svm = new LibSVM();
+            svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
+            svm.setCacheSize(100);
+            svm.setCoef0(0.0);
+            svm.setCost(1.0);
+            svm.setDebug(false);
+            svm.setDegree(3);
+            svm.setDoNotReplaceMissingValues(false);
+            svm.setEps(0.001);
+            svm.setGamma(0.0);
+            svm.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_RBF, LibSVM.TAGS_KERNELTYPE));
+            svm.setLoss(0.1);
+            svm.setNormalize(true);
+            svm.setNu(0.5);
+            svm.setProbabilityEstimates(false);
+            svm.setShrinking(true);
+            svm.setWeights("");
+            svm.setDebug(false);
 
-            LibSVM svmIni = new LibSVM();
-            svmIni.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
-            svmIni.setCacheSize(100);
-            svmIni.setCoef0(0.0);
-            svmIni.setCost(1.0);
-            svmIni.setDebug(false);
-            svmIni.setDegree(3);
-            svmIni.setDoNotReplaceMissingValues(false);
-            svmIni.setEps(0.001);
-            svmIni.setGamma(0.0);
-            svmIni.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_RBF, LibSVM.TAGS_KERNELTYPE));
-            svmIni.setLoss(0.1);
-            svmIni.setNormalize(true);
-            svmIni.setNu(0.5);
-            svmIni.setProbabilityEstimates(false);
-            svmIni.setShrinking(true);
-            svmIni.setWeights("");
-            svmIni.setDebug(false);
-
-            PrintStream def = new PrintStream(System.out);
-            System.setOut(new PrintStream("output_weka.txt"));
-
-            svmIni.buildClassifier(train);
-
-            //
-            LibSVM svmFim = GridSearch(svmIni, train);
-
-            
-            System.setOut(def);
-
-            return svmFim;
+//            PrintStream def = new PrintStream(System.out);
+//            System.setOut(new PrintStream("output_weka.txt"));
+            return svm;
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
         }
+    }
+
+    private void constroiClassificador(LibSVM svm, Instances train) throws Exception {
+
+        PrintStream def = new PrintStream(System.out);
+        System.setOut(new PrintStream("output_weka.txt"));
+
+        svm.buildClassifier(train);
+
+        System.setOut(def);
+
     }
 
     private LibSVM GridSearch(LibSVM svm, Instances train) throws Exception {
-        
+
+        PrintStream def = new PrintStream(System.out);
+        System.setOut(new PrintStream("output_weka.txt"));
+
         GridSearch gridSearch = new GridSearch();
         gridSearch.setClassifier(svm);
         gridSearch.setEvaluation(new SelectedTag(GridSearch.EVALUATION_ACC, GridSearch.TAGS_EVALUATION));
 
-        //evalaute C 1,2,16
-        gridSearch.setXProperty("classifier.c");
-        gridSearch.setXMin(1);
-        gridSearch.setXMax(16);
+        //evalaute C 12^-5, 2^-4,..,2^2.
+        gridSearch.setXProperty("classifier.cost");
+        gridSearch.setXMin(-5);
+        gridSearch.setXMax(15);
         gridSearch.setXStep(1);
-        gridSearch.setXExpression("I");
+        gridSearch.setXBase(2);
+        gridSearch.setXExpression("pow(BASE,I)");
 
-        // evaluate gamma s 10^-5, 10^-4,..,10^2.
-        gridSearch.setYProperty("classifier.kernel.gamma");
-        gridSearch.setYMin(-5);
-        gridSearch.setYMax(2);
+        // evaluate gamma s 2^-5, 2^-4,..,2^2.
+        gridSearch.setYProperty("classifier.gamma");
+        gridSearch.setYMin(-15);
+        gridSearch.setYMax(3);
         gridSearch.setYStep(1);
-        gridSearch.setYBase(10);
+        gridSearch.setYBase(2);
         gridSearch.setYExpression("pow(BASE,I)");
-        
+
         gridSearch.buildClassifier(train);
-        
+
+        System.setOut(def);
+
         return (LibSVM) gridSearch.getBestClassifier();
-        
+
     }
 
     //Monta a base de dados
@@ -185,6 +242,12 @@ public class WekaSVM {
         } catch (IOException ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
         }
+    }
+
+    //Retorna o nome do arquivo
+    private String getName() {
+        File file = new File(arqARFF);
+        return file.getName();
     }
 
     public double getValorFechamentoPredito() {
