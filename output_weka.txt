@@ -1,11 +1,5 @@
-tccmaven.ARFF.IMPORT.BaixaArquivoException: Não foi possível baixar o arquivo CSV do link montado
-	at tccmaven.ARFF.IMPORT.BaixaArquivo.arquivoLink(BaixaArquivo.java:97)
-	at tccmaven.ARFF.IMPORT.BaixaArquivo.downloadArquivo(BaixaArquivo.java:47)
-	at tccmaven.ARFF.IMPORT.Importador.montaTimeSeries(Importador.java:44)
-	at tccmaven.ARFF.GeraArquivoARFF.geraArquivo(GeraArquivoARFF.java:60)
-	at tccmaven.Main.main(Main.java:55)
-Caused by: java.io.IOException: Server returned HTTP response code: 403 for URL: http://real-chart.finance.yahoo.com/table.csv?s=AGRO3.SA&d=11&e=30&f=2015&g=d&a=0&b=2&c=2015&ignore=.csv
-	at sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1839)
-	at sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1440)
-	at tccmaven.ARFF.IMPORT.BaixaArquivo.arquivoLink(BaixaArquivo.java:85)
-	... 4 more
+*
+optimization finished, #iter = 132
+nu = 9.482487904781282E-6
+obj = -14.540517473272107, rho = -11.544358761407182
+nSV = 79, nBSV = 0

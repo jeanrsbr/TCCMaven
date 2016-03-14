@@ -22,8 +22,47 @@ public class NomeParametros {
         this.nomeParametros[nomeParametros.length - 1] = "Target";
     }
 
+    //Retorna os parâmetros de apenas um país
     public String[] getNomeParametros() {
         return nomeParametros;
+    }
+
+    public int verificaExisteParametro(String pais, String nomeParametro) {
+
+        String nomeTemp = montaNomeParametro(pais, nomeParametro);
+
+        int num = 0;
+
+        //Verifica se existe o parâmetro indicado
+        for (int i = 0; i < nomeParametros.length; i++) {
+            if (nomeParametros[i].contains(nomeTemp)) {
+                num++;
+            }
+        }
+        return num;
+    }
+
+    public int[] getPeriodoParametro(String pais, String nomeParametro) {
+
+        int[] periodo = new int[verificaExisteParametro(pais, nomeParametro)];
+        int indice = 0;
+        String nomeTemp = montaNomeParametro(pais, nomeParametro);
+
+        //Verifica se existe o parâmetro indicado
+        for (int i = 0; i < nomeParametros.length; i++) {
+            if (nomeParametros[i].contains(nomeTemp)) {
+                periodo[indice] =;
+                indice++;
+            }
+        }
+
+        return periodo;
+
+    }
+
+    private int extraiPeriodoParametro(int oco) {
+        
+        
     }
 
     //Retorna a ocorrência do parâmetro Target

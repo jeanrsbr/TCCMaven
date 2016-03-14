@@ -4,9 +4,6 @@
  */
 package tccmaven.ARFF.PARAMETROS;
 
-import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
-import tccmaven.ARFF.PARAMETROS.InsereParametrosException;
-import tccmaven.ARFF.PARAMETROS.InsereParametros;
 import eu.verdelhan.ta4j.TimeSeries;
 import eu.verdelhan.ta4j.indicators.oscillators.StochasticOscillatorDIndicator;
 import eu.verdelhan.ta4j.indicators.oscillators.StochasticOscillatorKIndicator;
@@ -29,11 +26,12 @@ public class Indicadores {
     InsereParametros parametros;
     String pais;
     TimeSeries timeSeries;
-    private int oco;
+    NomeParametros nomeParametros;
 
-    public Indicadores(InsereParametros parametros, TimeSeries timeSeries) {
+    public Indicadores(InsereParametros parametros, TimeSeries timeSeries, NomeParametros nomeParametros) {
         this.parametros = parametros;
         this.timeSeries = timeSeries;
+        this.nomeParametros = nomeParametros;
     }
 
     public InsereParametros getParametros() {
@@ -54,6 +52,16 @@ public class Indicadores {
         if (pais.equals("")) {
             throw new IndicadoresException("Não foi informado o código do país para gerar os indicadores");
         }
+        
+        
+        //Verifica se existe o parâmetro SMA para exportação
+        if (nomeParametros.verificaExisteParametro(pais, "MA") > 0){
+            for (int i = 0; i < arr.length; i++) {
+                                
+            }
+        }
+        
+        
 
         calculaSMA(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.SMA")));
         calculaIFR(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.IFR")));

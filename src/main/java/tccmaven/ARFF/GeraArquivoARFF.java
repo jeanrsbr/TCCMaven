@@ -25,6 +25,7 @@ import tccmaven.MISC.Log;
 import tccmaven.ARFF.IMPORT.BaixaArquivoException;
 import tccmaven.ARFF.IMPORT.Importador;
 import tccmaven.ARFF.IMPORT.ImportadorException;
+import tccmaven.MISC.EditaValores;
 
 /**
  *
@@ -67,7 +68,7 @@ public class GeraArquivoARFF {
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo " + ativoBrasil, "INSERÇÃO");
         //Instância os indicadores referenciando os parâmetros
-        Indicadores indicadoresBra = new Indicadores(insereParametros, timeseries);
+        Indicadores indicadoresBra = new Indicadores(insereParametros, timeseries, nomeParametros);
         indicadoresBra.setPaisBrasil();
         indicadoresBra.calculaIndicadoresSerie();
 
@@ -82,7 +83,7 @@ public class GeraArquivoARFF {
         //Calcula indicadores
         Log.loga("Serão calculados os indicadores do ativo " + ativoEst, "INSERÇÃO");
         //Instância os indicadores referenciando os parâmetros
-        Indicadores indicadoresEst = new Indicadores(insereParametros, timeseries);
+        Indicadores indicadoresEst = new Indicadores(insereParametros, timeseries, nomeParametros);
         indicadoresEst.setPaisEstrangeiro();
         indicadoresEst.calculaIndicadoresSerie();
 
@@ -183,7 +184,7 @@ public class GeraArquivoARFF {
                 double[] valores = lista.get(i);
 
                 for (int j = 0; j < valores.length; j++) {
-                    linha.append(editaDouble(valores[j]));
+                    linha.append(EditaValores.edita2Dec(valores[j]));
                     linha.append(",");
                 }
                 //Remove a última vírgula da literal
@@ -202,16 +203,5 @@ public class GeraArquivoARFF {
             throw new GeraArquivoARFFException("Ocorreu erro no momento de gerar o arquivo ARFF", ex);
         }
 
-    }
-    /*
-     * Realiza a formatação do número para evitar que ele seja representado
-     * como notação cientifica quando o seu valor for muito grande
-     */
-
-    private String editaDouble(Double valor) {
-        NumberFormat f = NumberFormat.getInstance();
-        f.setGroupingUsed(false);
-        f.setMaximumFractionDigits(2);
-        return f.format(valor.doubleValue()).replaceAll(",", ".");
     }
 }

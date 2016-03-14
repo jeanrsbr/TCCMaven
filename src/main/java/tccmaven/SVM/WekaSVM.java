@@ -19,6 +19,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import tccmaven.MISC.EditaValores;
 import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.GridSearch;
 import weka.core.Instances;
@@ -37,15 +38,12 @@ public class WekaSVM {
     //Percentual de diferença entre o dia atual e o predito
     private double percentualValorPredito = 0;
 
-    private String arqARFF;
     private String nomArqARFF;
     private Instances dataSet;
 
     public WekaSVM(String arqARFF) throws WekaSVMException {
-
-        this.arqARFF = arqARFF;
-        dataSet = buildBase();
-        nomArqARFF = getName();
+        dataSet = buildBase(arqARFF);
+        nomArqARFF = getName(arqARFF);
     }
 
     //Realiza a predição da cotação de fechamento do próximo dia
@@ -64,7 +62,7 @@ public class WekaSVM {
 
         try{
         //Abre o arquivo CSV de resultados
-        File file = new File("teste/resultado.csv");
+        File file = new File("teste/resultado_" + nomArqARFF.split(".arff")[0] + ".csv");
         FileOutputStream arquivoGravacao = new FileOutputStream(file);
         OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);
         BufferedWriter resultado = new BufferedWriter(strWriter);
@@ -73,12 +71,12 @@ public class WekaSVM {
         resultado.write("ativo;grid_search;tam_treino;valor_real;valor_predito;diff;perc_acerto");
         resultado.newLine();
 
-        //Realiza testes com os últimos 20 dias da amostra, com diversos tamanhos
-        for (int i = 2; i < 22; i++) {
+        //Realiza testes com os últimos 10 dias da amostra, com diversos tamanhos
+        for (int i = 2; i < 12; i++) {
 
             perfomanceAnalysis(i, 50, resultado);
             perfomanceAnalysis(i, 100, resultado);
-            perfomanceAnalysis(i, 150, resultado);
+            //perfomanceAnalysis(i, 150, resultado);
 
         }
 
@@ -128,14 +126,14 @@ public class WekaSVM {
 
     //Recebe a instância de teste e o modelo
     private String testaClasse(Instances test, LibSVM model, String gridSearch, int trainSize) throws Exception {
-        double percentualAcerto;
         //Obtém o valor real do atributo
         double real = test.instance(0).classValue();
         //Valor predito
         double predict = model.classifyInstance(test.instance(0));
-
+        //Diferença entre o real e o predito
+        double diff =  real - predict;
         //Ajusta a tabela de percentual de acerto
-        percentualAcerto = (predict * 100) / real;
+        double  percentualAcerto = (predict * 100) / real;
 
         StringBuilder linha = new StringBuilder();
         linha.append(nomArqARFF);
@@ -144,13 +142,13 @@ public class WekaSVM {
         linha.append(";");
         linha.append(trainSize);
         linha.append(";");
-        linha.append(real);
+        linha.append(EditaValores.edita2Dec(real));
         linha.append(";");
-        linha.append(predict);
+        linha.append(EditaValores.edita2Dec(predict));
         linha.append(";");
-        linha.append(real - predict);
+        linha.append(EditaValores.edita2Dec(diff));
         linha.append(";");
-        linha.append(percentualAcerto);
+        linha.append(EditaValores.edita2Dec(percentualAcerto));
         //Retorna a linha montada
         return linha.toString();
 
@@ -178,8 +176,6 @@ public class WekaSVM {
             svm.setWeights("");
             svm.setDebug(false);
 
-//            PrintStream def = new PrintStream(System.out);
-//            System.setOut(new PrintStream("output_weka.txt"));
             return svm;
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
@@ -231,7 +227,7 @@ public class WekaSVM {
     }
 
     //Monta a base de dados
-    private Instances buildBase() throws WekaSVMException {
+    private Instances buildBase(String arqARFF) throws WekaSVMException {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(arqARFF));
             Instances train = new Instances(reader);
@@ -245,7 +241,7 @@ public class WekaSVM {
     }
 
     //Retorna o nome do arquivo
-    private String getName() {
+    private String getName(String arqARFF) {
         File file = new File(arqARFF);
         return file.getName();
     }
