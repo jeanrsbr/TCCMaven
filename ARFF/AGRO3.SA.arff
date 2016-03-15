@@ -13,7 +13,7 @@
 @attribute Bra_BIAS_14 numeric
 @attribute Bra_ClosePrice numeric
 @attribute Bra_LowPrice numeric
-@attribute Bra_MA_05 numeric
+@attribute Bra_SMA_05 numeric
 @attribute Bra_MACD numeric
 @attribute Bra_Momentum_14 numeric
 @attribute Bra_OBV numeric
@@ -21,16 +21,16 @@
 @attribute Bra_PROC_14 numeric
 @attribute Bra_PVT numeric
 @attribute Bra_RSI_14 numeric
-@attribute Bra_SODI_14 numeric
+@attribute Bra_SODI numeric
 @attribute Bra_SOKI_14 numeric
 @attribute Bra_Volume numeric
-@attribute Bra_WR_14 numeric
+@attribute Bra_WILLR_14 numeric
 @attribute Est_ADMI_14 numeric
 @attribute Est_BIAS_14 numeric
 @attribute Est_ClosePrice numeric
 @attribute Est_HighPrice numeric
 @attribute Est_LowPrice numeric
-@attribute Est_MA_05 numeric
+@attribute Est_SMA_05 numeric
 @attribute Est_MACD numeric
 @attribute Est_Momentum_14 numeric
 @attribute Est_OBV numeric
@@ -38,10 +38,10 @@
 @attribute Est_PROC_14 numeric
 @attribute Est_PVT numeric
 @attribute Est_RSI_14 numeric
-@attribute Est_SODI_14 numeric
+@attribute Est_SODI numeric
 @attribute Est_SOKI_14 numeric
 @attribute Est_Volume numeric
-@attribute Est_WR_14 numeric
+@attribute Est_WILLR_14 numeric
 @attribute Target numeric
 
 @data

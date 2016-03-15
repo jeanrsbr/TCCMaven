@@ -15,7 +15,6 @@ import eu.verdelhan.ta4j.indicators.trackers.RSIIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.SMAIndicator;
 import eu.verdelhan.ta4j.indicators.trackers.WilliamsRIndicator;
 import eu.verdelhan.ta4j.indicators.volume.OnBalanceVolumeIndicator;
-import tccmaven.MISC.LeituraProperties;
 
 /**
  *
@@ -23,10 +22,22 @@ import tccmaven.MISC.LeituraProperties;
  */
 public class Indicadores {
 
-    InsereParametros parametros;
-    String pais;
-    TimeSeries timeSeries;
-    NomeParametros nomeParametros;
+    private InsereParametros parametros;
+    private String pais;
+    private TimeSeries timeSeries;
+    private NomeParametros nomeParametros;
+
+    public static final String MOVING_AVERAGE = "SMA";
+    public static final String RELATIVE_STRENGTH_INDICATOR = "RSI";
+    public static final String STOCHASTIC_OSCILATOR_KD = "SOKI";
+    public static final String ON_BALANCE_VOLUME = "OBV";
+    public static final String MOVING_AVERAGE_CONVERGENCE_DIVERGENCE = "MACD";
+    public static final String PRICE_VOLUME_TREND = "PVT";
+    public static final String WILLIANS_R = "WILLR";
+    public static final String PRICE_RATE_OF_CHANGE = "PROC";
+    public static final String MOMENTUM = "Momentum";
+    public static final String BIAS = "BIAS";
+    public static final String AVERAGE_DIRECTIONAL_MOVEMENT_INDICATOR = "ADMI";
 
     public Indicadores(InsereParametros parametros, TimeSeries timeSeries, NomeParametros nomeParametros) {
         this.parametros = parametros;
@@ -47,33 +58,89 @@ public class Indicadores {
     }
 
     //Calcula indicadores da série temporal
-    public void calculaIndicadoresSerie() throws IndicadoresException, InsereParametrosException, NomeParametrosException {
+    public void calculaIndicadoresSerie() throws IndicadoresException, InsereParametrosException,
+            NomeParametrosException {
 
         if (pais.equals("")) {
             throw new IndicadoresException("Não foi informado o código do país para gerar os indicadores");
         }
-        
-        
-        //Verifica se existe o parâmetro SMA para exportação
-        if (nomeParametros.verificaExisteParametro(pais, "MA") > 0){
-            for (int i = 0; i < arr.length; i++) {
-                                
+
+        int[] periodos;
+
+        if (nomeParametros.verificaExisteParametro(pais, MOVING_AVERAGE) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, MOVING_AVERAGE);
+            for (int i = 0; i < periodos.length; i++) {
+                calculaSMA(periodos[i]);
             }
         }
-        
-        
 
-        calculaSMA(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.SMA")));
-        calculaIFR(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.IFR")));
-        calculaStochasticOscilatorKD(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.StochasticOscilatorKD")));
-        calculaOnBalanceVolume();
-        calculaMACD(12, 26);
-        calculaPVT();
-        calculaWillianR(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.WillianR")));
-        calculaROC(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.ROC")));
-        calculaMomentum(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.Momentum")));
-        calculaBIAS(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.BIAS")));
-        calculaADMI(Integer.parseInt(LeituraProperties.getInstance().leituraProperties("ind.ADMI")));
+        if (nomeParametros.verificaExisteParametro(pais, RELATIVE_STRENGTH_INDICATOR) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, RELATIVE_STRENGTH_INDICATOR);
+            for (int i = 0; i < periodos.length; i++) {
+                calculaIFR(periodos[i]);
+            }
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, STOCHASTIC_OSCILATOR_KD) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, STOCHASTIC_OSCILATOR_KD);
+
+            //Verifica se houve inconsistência
+            if (periodos.length > 1){
+                //O Parâmetro SOKI serve de referência para o SODI e o SODI não tem período
+                throw new IndicadoresException("Parâmetro SOKI não pode conter mais do que um período");
+            }
+
+            for (int i = 0; i < periodos.length; i++) {
+                calculaStochasticOscilatorKD(periodos[i]);
+            }
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, ON_BALANCE_VOLUME) > 0) {
+            calculaOnBalanceVolume();
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, MOVING_AVERAGE_CONVERGENCE_DIVERGENCE) > 0) {
+            calculaMACD(12, 26);
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, PRICE_VOLUME_TREND) > 0) {
+            calculaPVT();
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, WILLIANS_R) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, WILLIANS_R);
+            for (int i = 0; i < periodos.length; i++) {
+                calculaWillianR(periodos[i]);
+            }
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, PRICE_RATE_OF_CHANGE) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, PRICE_RATE_OF_CHANGE);
+            for (int i = 0; i < periodos.length; i++) {
+                calculaROC(periodos[i]);
+            }
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, MOMENTUM) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, MOMENTUM);
+            for (int i = 0; i < periodos.length; i++) {
+                calculaMomentum(periodos[i]);
+            }
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, BIAS) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, BIAS);
+            for (int i = 0; i < periodos.length; i++) {
+                calculaBIAS(periodos[i]);
+            }
+        }
+
+        if (nomeParametros.verificaExisteParametro(pais, AVERAGE_DIRECTIONAL_MOVEMENT_INDICATOR) > 0) {
+            periodos = nomeParametros.getPeriodoParametro(pais, AVERAGE_DIRECTIONAL_MOVEMENT_INDICATOR);
+            for (int i = 0; i < periodos.length; i++) {
+                calculaADMI(periodos[i]);
+            }
+        }
 
     }
 
@@ -85,7 +152,8 @@ public class Indicadores {
 
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), smaIndicator.getValue(i).toDouble(), pais, "MA", periodo);
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), smaIndicator.getValue(i).toDouble(), pais, MOVING_AVERAGE, periodo);
         }
     }
 
@@ -96,7 +164,8 @@ public class Indicadores {
         RSIIndicator rsiIndicator = new RSIIndicator(closePrice, periodo);
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), rsiIndicator.getValue(i).toDouble(), pais, "RSI", periodo);
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), rsiIndicator.getValue(i).toDouble(), pais, RELATIVE_STRENGTH_INDICATOR, periodo);
         }
 
     }
@@ -109,8 +178,10 @@ public class Indicadores {
 
         //Varre os indicadores obtidos
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), soki.getValue(i).toDouble(), pais, "SOKI", periodo);
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), sodi.getValue(i).toDouble(), pais, "SODI", periodo);
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), soki.getValue(i).toDouble(), pais, STOCHASTIC_OSCILATOR_KD, periodo);
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), sodi.getValue(i).toDouble(), pais, "SODI");
         }
 
     }
@@ -120,17 +191,20 @@ public class Indicadores {
 
         OnBalanceVolumeIndicator onBalanceVolume = new OnBalanceVolumeIndicator(timeSeries);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), onBalanceVolume.getValue(i).toDouble(), pais, "OBV");
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), onBalanceVolume.getValue(i).toDouble(), pais, ON_BALANCE_VOLUME);
         }
     }
 
     //Calcula o índice MACD
-    private void calculaMACD(int periodoCurto, int periodoLongo) throws InsereParametrosException, NomeParametrosException {
+    private void calculaMACD(int periodoCurto, int periodoLongo) throws InsereParametrosException,
+            NomeParametrosException {
 
         ClosePriceIndicator closePrice = new ClosePriceIndicator(timeSeries);
         MACDIndicator mACD = new MACDIndicator(closePrice, periodoCurto, periodoLongo);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), mACD.getValue(i).toDouble(), pais, "MACD");
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), mACD.getValue(i).toDouble(), pais, MOVING_AVERAGE_CONVERGENCE_DIVERGENCE);
         }
     }
 
@@ -138,7 +212,8 @@ public class Indicadores {
     private void calculaWillianR(int periodo) throws InsereParametrosException, NomeParametrosException {
         WilliamsRIndicator williamsRIndicator = new WilliamsRIndicator(timeSeries, periodo);
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), williamsRIndicator.getValue(i).toDouble(), pais, "WR", periodo);
+            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), williamsRIndicator.getValue(i).
+                    toDouble(), pais, WILLIANS_R, periodo);
         }
     }
 
@@ -150,14 +225,14 @@ public class Indicadores {
 
             //Se estiver no inicio da série temporal
             if (periodo > i) {
-                parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), 0d, pais, "Momentum", periodo);
+                parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), 0d, pais, MOMENTUM, periodo);
                 continue;
             }
             //CLOSE n - CLOSE n-p
-            Double momentum = timeSeries.getTick(i).getClosePrice().toDouble() - timeSeries.getTick(i - periodo).getClosePrice().toDouble();
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), momentum, pais, "Momentum", periodo);
+            Double momentum = timeSeries.getTick(i).getClosePrice().toDouble() - timeSeries.getTick(i - periodo).
+                    getClosePrice().toDouble();
+            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), momentum, pais, MOMENTUM, periodo);
         }
-
 
     }
 
@@ -168,7 +243,8 @@ public class Indicadores {
         ROCIndicator rOCIndicator = new ROCIndicator(closePrice, periodo);
 
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), rOCIndicator.getValue(i).toDouble(), pais, "PROC", periodo);
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), rOCIndicator.getValue(i).toDouble(), pais, PRICE_RATE_OF_CHANGE, periodo);
         }
     }
 
@@ -180,7 +256,7 @@ public class Indicadores {
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
             //Se estiver na primeira ocorrência
             if (i == 0) {
-                parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), 0d, pais, "PVT");
+                parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), 0d, pais, PRICE_VOLUME_TREND);
                 continue;
             }
             //Preço de fechamento atual
@@ -189,10 +265,10 @@ public class Indicadores {
             Double closePriceAnt = timeSeries.getTick(i - 1).getClosePrice().toDouble();
             //Volume atual
             Double volume = timeSeries.getTick(i).getVolume().toDouble();
-            //VPTprev + Volume x ((CloseN - CloseN-1) / CloseN-1) 
+            //VPTprev + Volume x ((CloseN - CloseN-1) / CloseN-1)
             Double pVT = pVTAnterior + volume * ((closePrice - closePriceAnt) / closePriceAnt);
 
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), pVT, pais, "PVT");
+            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), pVT, pais, PRICE_VOLUME_TREND);
             //Atualiza pVTAnterior
             pVTAnterior = pVT;
         }
@@ -209,7 +285,7 @@ public class Indicadores {
             Double closePrice = timeSeries.getTick(i).getClosePrice().toDouble();
             Double sMA = sMAIndicator.getValue(i).toDouble();
             Double bIAS = ((closePrice - sMA) / sMA) * 100;
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), bIAS, pais, "BIAS", periodo);
+            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), bIAS, pais, BIAS, periodo);
         }
     }
 
@@ -218,7 +294,8 @@ public class Indicadores {
         AverageDirectionalMovementIndicator admi = new AverageDirectionalMovementIndicator(timeSeries, periodo);
         //Varre a série temporal
         for (int i = 0; i < timeSeries.getTickCount(); i++) {
-            parametros.insereValor(timeSeries.getTick(i).getEndTime().toDate(), admi.getValue(i).toDouble(), pais, "ADMI", periodo);
+            parametros.
+                    insereValor(timeSeries.getTick(i).getEndTime().toDate(), admi.getValue(i).toDouble(), pais, AVERAGE_DIRECTIONAL_MOVEMENT_INDICATOR, periodo);
         }
 
     }

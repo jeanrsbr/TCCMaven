@@ -42,7 +42,7 @@ public class NomeParametros {
         return num;
     }
 
-    public int[] getPeriodoParametro(String pais, String nomeParametro) {
+    public int[] getPeriodoParametro(String pais, String nomeParametro) throws NomeParametrosException {
 
         int[] periodo = new int[verificaExisteParametro(pais, nomeParametro)];
         int indice = 0;
@@ -51,18 +51,22 @@ public class NomeParametros {
         //Verifica se existe o parâmetro indicado
         for (int i = 0; i < nomeParametros.length; i++) {
             if (nomeParametros[i].contains(nomeTemp)) {
-                periodo[indice] =;
+                periodo[indice] = extraiPeriodoParametro(i);
                 indice++;
             }
         }
-
         return periodo;
-
     }
 
-    private int extraiPeriodoParametro(int oco) {
-        
-        
+    private int extraiPeriodoParametro(int oco) throws NomeParametrosException {
+        String[] decomposto = nomeParametros[oco].split("_");
+
+        if (decomposto.length < 3) {
+            throw new NomeParametrosException("Foi tentado extrair o período de um parâmetro sem período");
+        }
+
+        //Extrai o valor inteiro do período
+        return Integer.parseInt(decomposto[2]);
     }
 
     //Retorna a ocorrência do parâmetro Target
