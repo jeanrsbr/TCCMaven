@@ -22,4 +22,11 @@ public class EditaValores {
         f.setMaximumFractionDigits(2);
         return f.format(valor.doubleValue()).replaceAll(",", ".");
     }
+
+    public static String edita2DecVirgula(Double valor) {
+        NumberFormat f = NumberFormat.getInstance();
+        f.setGroupingUsed(false);
+        f.setMaximumFractionDigits(2);
+        return f.format(valor.doubleValue());
+    }
 }
