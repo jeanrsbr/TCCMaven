@@ -67,15 +67,17 @@ public class WekaSVM {
             BufferedWriter resultado = new BufferedWriter(strWriter);
 
             //Cabeçalho
-            resultado.write("ativo;grid_search;tam_treino;evaluation;valor_real;valor_predito;diff;perc_acerto");
+            resultado.write("ativo;grid_search;tam_treino;evaluation;valor_real;valor_predito;diff;diffMod;perc_acerto");
             resultado.newLine();
 
-            //Realiza testes com os últimos 10 dias da amostra, com diversos tamanhos
+            //Realiza testes com os últimos 20 dias da amostra, com diversos tamanhos
             for (int i = 2; i < 12; i++) {
 
-                //perfomanceAnalysis(i, 10, resultado);
+                perfomanceAnalysis(i, 15, resultado);
                 perfomanceAnalysis(i, 20, resultado);
                 perfomanceAnalysis(i, 30, resultado);
+                perfomanceAnalysis(i, 40, resultado);
+                perfomanceAnalysis(i, 50, resultado);
                 //perfomanceAnalysis(i, 70, resultado);
                 //perfomanceAnalysis(i, 120, resultado);
 
@@ -90,8 +92,6 @@ public class WekaSVM {
 
     //Realiza o teste de performance do modelo construído
     private void perfomanceAnalysis(int dia, int trainSize, BufferedWriter resultado) throws WekaSVMException {
-
-
 
         //Se o SET de treino for maior que o SET disponível
         if ((trainSize + dia) > dataSet.numInstances()) {
@@ -108,87 +108,93 @@ public class WekaSVM {
 
         LibSVM svm = null;
 
-        try {
-            //Constroi modelo sem Grid Search
-            svm = buildSVM();
-            constroiClassificador(svm, train);
-            Log.loga("COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-            resultado.write(testaClasse(test, svm, "Não", trainSize, "Nenhum"));
-            resultado.newLine();
-        } catch (Exception ex) {
-            Log.loga("Exceção COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-        }
-
-        try {
-            //Constroi modelo com Grid Search antes com MAE
-            svm = buildSVM();
-            svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_MAE, GridSearch.TAGS_EVALUATION));
-            constroiClassificador(svm, train);
-            Log.loga("MAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-            resultado.write(testaClasse(test, svm, "Sim", trainSize, "MAE"));
-            resultado.newLine();
-        } catch (Exception ex) {
-            Log.loga("Excecão MAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-        }
-
-
-        try {
-            //Constroi modelo com Grid Search antes com RMSE
-            svm = buildSVM();
-            svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RMSE, GridSearch.TAGS_EVALUATION));
-            constroiClassificador(svm, train);
-            Log.loga("RMSE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-            resultado.write(testaClasse(test, svm, "Sim", trainSize, "RMSE"));
-            resultado.newLine();
-        } catch (Exception ex) {
-            Log.loga("Excecão RMSE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-        }
-
-//            //Constroi modelo com Grid Search antes com RRSE (Sempre o mesmo valor do RMSE)
-//            svm = buildSVM();
-//            svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RRSE, GridSearch.TAGS_EVALUATION));
-//            constroiClassificador(svm, train);
-//            Log.loga("RRSE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-//            resultado.write(testaClasse(test, svm, "Sim", trainSize, "RRSE"));
+//        //Constroi modelo sem Grid Search
+//        svm = buildSVM();
+//        constroiClassificador(svm, train);
+//        Log.loga("COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+//        try {
+//            resultado.write(testaClasse(test, svm, "Não", trainSize, "Nenhum"));
 //            resultado.newLine();
+//        } catch (Exception ex) {
+//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
+//        }
 
-//            //Constroi modelo com Grid Search antes com KAPPA (Sempre o mesmo valor)
-//            svm = buildSVM();
-//            svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_KAPPA, GridSearch.TAGS_EVALUATION));
-//            constroiClassificador(svm, train);
-//            Log.loga("KAPPA - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+//        //Constroi modelo com Grid Search antes com MAE
+//        svm = buildSVM();
+//        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_MAE, GridSearch.TAGS_EVALUATION));
+//        constroiClassificador(svm, train);
+//        Log.loga("MAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+//        try {
+//            resultado.write(testaClasse(test, svm, "Sim", trainSize, "MAE"));
+//            resultado.newLine();
+//        } catch (Exception ex) {
+//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
+//        }
+
+//        //Constroi modelo com Grid Search antes com RMSE
+//        svm = buildSVM();
+//        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RMSE, GridSearch.TAGS_EVALUATION));
+//        constroiClassificador(svm, train);
+//        Log.loga("RMSE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+//        try {
+//            resultado.write(testaClasse(test, svm, "Sim", trainSize, "RMSE"));
+//            resultado.newLine();
+//        } catch (Exception ex) {
+//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
+//        }
+
+        //Constroi modelo com Grid Search antes com RRSE (Sempre o mesmo valor do RMSE)
+        svm = buildSVM();
+        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RRSE, GridSearch.TAGS_EVALUATION));
+        constroiClassificador(svm, train);
+        Log.loga("RRSE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+        try {
+
+            resultado.write(testaClasse(test, svm, "Sim", trainSize, "RRSE"));
+            resultado.newLine();
+        } catch (Exception ex) {
+            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
+        }
+//        //Constroi modelo com Grid Search antes com KAPPA (Sempre o mesmo valor)
+//        svm = buildSVM();
+//        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_KAPPA, GridSearch.TAGS_EVALUATION));
+//        constroiClassificador(svm, train);
+//        Log.loga("KAPPA - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+//        try {
 //            resultado.write(testaClasse(test, svm, "Sim", trainSize, "KAPPA"));
 //            resultado.newLine();
-
+//        } catch (Exception ex) {
+//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
+//        }
+        //Constroi modelo com Grid Search antes com COMBINED
+        svm = buildSVM();
+        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_COMBINED, GridSearch.TAGS_EVALUATION));
+        constroiClassificador(svm, train);
+        Log.loga("COMBINED - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
         try {
-            //Constroi modelo com Grid Search antes com COMBINED
-            svm = buildSVM();
-            svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_COMBINED, GridSearch.TAGS_EVALUATION));
-            constroiClassificador(svm, train);
-            Log.loga("COMBINED - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
             resultado.write(testaClasse(test, svm, "Sim", trainSize, "COMBINED"));
             resultado.newLine();
         } catch (Exception ex) {
-            Log.loga("Exceção COMBINED - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
         }
-        
+
+        //Constroi modelo com Grid Search antes com RAE
+        svm = buildSVM();
+        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RAE, GridSearch.TAGS_EVALUATION));
+        constroiClassificador(svm, train);
+        Log.loga("RAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
         try {
-            //Constroi modelo com Grid Search antes com RAE
-            svm = buildSVM();
-            svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RAE, GridSearch.TAGS_EVALUATION));
-            constroiClassificador(svm, train);
-            Log.loga("RAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
             resultado.write(testaClasse(test, svm, "Sim", trainSize, "RAE"));
             resultado.newLine();
         } catch (Exception ex) {
-            Log.loga("Exceção RAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
         }
-
 
     }
 
     //Recebe a instância de teste e o modelo
-    private String testaClasse(Instances test, LibSVM model, String gridSearch, int trainSize, String evaluation) throws Exception {
+    private String testaClasse(Instances test, LibSVM model, String gridSearch, int trainSize, String evaluation) throws
+            Exception {
         //Obtém o valor real do atributo
         double real = test.instance(0).classValue();
         //Valor predito
@@ -197,6 +203,11 @@ public class WekaSVM {
         double diff = real - predict;
         //Ajusta a tabela de percentual de acerto
         double percentualAcerto = (predict * 100) / real;
+
+        double diffMod = diff;
+        if (diffMod < 0) {
+            diffMod = diffMod * -1;
+        }
 
         StringBuilder linha = new StringBuilder();
         linha.append(nomArqARFF);
@@ -212,6 +223,8 @@ public class WekaSVM {
         linha.append(EditaValores.edita2DecVirgula(predict));
         linha.append(";");
         linha.append(EditaValores.edita2DecVirgula(diff));
+        linha.append(";");
+        linha.append(EditaValores.edita2DecVirgula(diffMod));
         linha.append(";");
         linha.append(EditaValores.edita2DecVirgula(percentualAcerto));
 
@@ -253,21 +266,27 @@ public class WekaSVM {
         }
     }
 
-    private void constroiClassificador(LibSVM svm, Instances train) throws Exception {
+    private void constroiClassificador(LibSVM svm, Instances train) throws WekaSVMException {
 
-        PrintStream def = new PrintStream(System.out);
-        System.setOut(new PrintStream("output_weka.txt"));
-
-        svm.buildClassifier(train);
-
-        System.setOut(def);
+        try {
+            PrintStream def = new PrintStream(System.out);
+            System.setOut(new PrintStream("output_weka.txt"));
+            svm.buildClassifier(train);
+            System.setOut(def);
+        } catch (Exception ex) {
+            Log.loga("Excecão");
+        }
 
     }
 
-    private LibSVM GridSearch(LibSVM svm, Instances train, SelectedTag selectedTag) throws Exception {
+    private LibSVM GridSearch(LibSVM svm, Instances train, SelectedTag selectedTag) throws WekaSVMException {
 
         PrintStream def = new PrintStream(System.out);
-        System.setOut(new PrintStream("output_weka.txt"));
+        try {
+            System.setOut(new PrintStream("output_weka.txt"));
+        } catch (Exception ex) {
+            throw new WekaSVMException("Não foi possível direcionar a saída para outro caminho");
+        }
 
         GridSearch gridSearch = new GridSearch();
         gridSearch.setClassifier(svm);
@@ -275,21 +294,25 @@ public class WekaSVM {
 
         //evalaute C 12^-5, 2^-4,..,2^2.
         gridSearch.setXProperty("classifier.cost");
-        gridSearch.setXMin(-5);
-        gridSearch.setXMax(15);
+        gridSearch.setXMin(-10);
+        gridSearch.setXMax(20);
         gridSearch.setXStep(0.5);
         gridSearch.setXBase(2);
         gridSearch.setXExpression("pow(BASE,I)");
 
         // evaluate gamma s 2^-5, 2^-4,..,2^2.
         gridSearch.setYProperty("classifier.gamma");
-        gridSearch.setYMin(-15);
-        gridSearch.setYMax(3);
+        gridSearch.setYMin(-20);
+        gridSearch.setYMax(5);
         gridSearch.setYStep(0.5);
         gridSearch.setYBase(2);
         gridSearch.setYExpression("pow(BASE,I)");
 
-        gridSearch.buildClassifier(train);
+        try {
+            gridSearch.buildClassifier(train);
+        } catch (Exception ex) {
+            Log.loga("Excecão");
+        }
 
         System.setOut(def);
         return (LibSVM) gridSearch.getBestClassifier();
