@@ -71,14 +71,14 @@ public class WekaSVM {
             resultado.newLine();
 
             //Realiza testes com os últimos 20 dias da amostra, com diversos tamanhos
-            for (int i = 2; i < 12; i++) {
+            for (int i = 2; i < 22; i++) {
 
-                perfomanceAnalysis(i, 15, resultado);
-                perfomanceAnalysis(i, 20, resultado);
+                perfomanceAnalysis(i, 25, resultado);
                 perfomanceAnalysis(i, 30, resultado);
+                perfomanceAnalysis(i, 35, resultado);
                 perfomanceAnalysis(i, 40, resultado);
                 perfomanceAnalysis(i, 50, resultado);
-                //perfomanceAnalysis(i, 70, resultado);
+                perfomanceAnalysis(i, 70, resultado);
                 //perfomanceAnalysis(i, 120, resultado);
 
             }
@@ -108,16 +108,16 @@ public class WekaSVM {
 
         LibSVM svm = null;
 
-//        //Constroi modelo sem Grid Search
-//        svm = buildSVM();
-//        constroiClassificador(svm, train);
-//        Log.loga("COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-//        try {
-//            resultado.write(testaClasse(test, svm, "Não", trainSize, "Nenhum"));
-//            resultado.newLine();
-//        } catch (Exception ex) {
-//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-//        }
+        //Constroi modelo sem Grid Search
+        svm = buildSVM();
+        constroiClassificador(svm, train);
+        Log.loga("COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
+        try {
+            resultado.write(testaClasse(test, svm, "Não", trainSize, "Nenhum"));
+            resultado.newLine();
+        } catch (Exception ex) {
+            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
+        }
 
 //        //Constroi modelo com Grid Search antes com MAE
 //        svm = buildSVM();
@@ -240,7 +240,7 @@ public class WekaSVM {
             System.setOut(new PrintStream("output_weka.txt"));
 
             LibSVM svm = new LibSVM();
-            svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
+            svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_NU_SVR, LibSVM.TAGS_SVMTYPE));
             svm.setCacheSize(100);
             svm.setCoef0(0.0);
             svm.setCost(1.0);
