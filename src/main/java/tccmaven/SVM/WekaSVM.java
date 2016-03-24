@@ -12,14 +12,12 @@
 package tccmaven.SVM;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
-import tccmaven.MISC.EditaValores;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import tccmaven.MISC.Log;
 import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.GridSearch;
@@ -30,68 +28,34 @@ import weka.core.SelectedTag;
  *
  * @author Jean-NoteI5
  */
-public class WekaSVM {
+public class WekaSVM implements Runnable {
 
-    //Valor de fechamento predito pelo algoritmo
-    private double valorFechamentoPredito = 0;
-    //Diferença entre o valor do dia atual e o valor predito para amanhã
-    private double difValorPredito = 0;
-    //Percentual de diferença entre o dia atual e o predito
-    private double percentualValorPredito = 0;
     private String nomArqARFF;
     private Instances dataSet;
+    //Parâmetros de entrada
+    private int dia;
+    private int trainSize;
+    private int gridSearchEvaluation;
+    //Parâmetros ótimos da SVM
+    private double cost;
+    private double gamma;
+    //Parâmetros da predição
+    private double real;
+    private double predict;
+    private double percentualAcerto;
+    private double diffMod;
 
-    public WekaSVM(String arqARFF) throws WekaSVMException {
+    public WekaSVM(String arqARFF, int dia, int trainSize, int gridSearchEvaluation) throws WekaSVMException {
         dataSet = buildBase(arqARFF);
         nomArqARFF = getName(arqARFF);
-    }
+        this.dia = dia;
+        this.trainSize = trainSize;
+        this.gridSearchEvaluation = gridSearchEvaluation;
 
-    //Realiza a predição da cotação de fechamento do próximo dia
-    public void prediction() throws WekaSVMException {
-
-        try {
-        } catch (Exception ex) {
-            throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
-        }
-
-    }
-
-    //Realiza os testes de performance
-    public void perfomanceAnalysis() throws WekaSVMException {
-
-        try {
-            //Abre o arquivo CSV de resultados
-            File file = new File("teste/resultado_" + nomArqARFF.split(".arff")[0] + ".csv");
-            FileOutputStream arquivoGravacao = new FileOutputStream(file);
-            OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);
-            BufferedWriter resultado = new BufferedWriter(strWriter);
-
-            //Cabeçalho
-            resultado.write("ativo;grid_search;tam_treino;evaluation;valor_real;valor_predito;diff;diffMod;perc_acerto");
-            resultado.newLine();
-
-            //Realiza testes com os últimos 20 dias da amostra, com diversos tamanhos
-            for (int i = 2; i < 22; i++) {
-
-                perfomanceAnalysis(i, 25, resultado);
-                perfomanceAnalysis(i, 30, resultado);
-                perfomanceAnalysis(i, 35, resultado);
-                perfomanceAnalysis(i, 40, resultado);
-                perfomanceAnalysis(i, 50, resultado);
-                perfomanceAnalysis(i, 70, resultado);
-                //perfomanceAnalysis(i, 120, resultado);
-
-            }
-
-            resultado.flush();
-            resultado.close();
-        } catch (IOException ex) {
-            throw new WekaSVMException("Não foi possível criar o arquivo de resultado");
-        }
     }
 
     //Realiza o teste de performance do modelo construído
-    private void perfomanceAnalysis(int dia, int trainSize, BufferedWriter resultado) throws WekaSVMException {
+    public void perfomanceAnalysis() throws WekaSVMException {
 
         //Se o SET de treino for maior que o SET disponível
         if ((trainSize + dia) > dataSet.numInstances()) {
@@ -104,133 +68,30 @@ public class WekaSVM {
         train.setClassIndex(train.numAttributes() - 1);
         test.setClassIndex(test.numAttributes() - 1);
 
-        Log.loga("Iniciando exportação com conjunto de " + trainSize + " dias do dia " + dia, "SVM");
-
-        LibSVM svm = null;
-
-        //Constroi modelo sem Grid Search
-        svm = buildSVM();
+        LibSVM svm = buildSVM();
+        svm = GridSearch(svm, train, new SelectedTag(gridSearchEvaluation, GridSearch.TAGS_EVALUATION));
         constroiClassificador(svm, train);
-        Log.loga("COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-        try {
-            resultado.write(testaClasse(test, svm, "Não", trainSize, "Nenhum"));
-            resultado.newLine();
-        } catch (Exception ex) {
-            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-        }
 
-//        //Constroi modelo com Grid Search antes com MAE
-//        svm = buildSVM();
-//        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_MAE, GridSearch.TAGS_EVALUATION));
-//        constroiClassificador(svm, train);
-//        Log.loga("MAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-//        try {
-//            resultado.write(testaClasse(test, svm, "Sim", trainSize, "MAE"));
-//            resultado.newLine();
-//        } catch (Exception ex) {
-//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-//        }
 
-//        //Constroi modelo com Grid Search antes com RMSE
-//        svm = buildSVM();
-//        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RMSE, GridSearch.TAGS_EVALUATION));
-//        constroiClassificador(svm, train);
-//        Log.loga("RMSE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-//        try {
-//            resultado.write(testaClasse(test, svm, "Sim", trainSize, "RMSE"));
-//            resultado.newLine();
-//        } catch (Exception ex) {
-//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-//        }
+        cost = svm.getCost();
+        gamma = svm.getGamma();
 
-        //Constroi modelo com Grid Search antes com RRSE (Sempre o mesmo valor do RMSE)
-        svm = buildSVM();
-        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RRSE, GridSearch.TAGS_EVALUATION));
-        constroiClassificador(svm, train);
-        Log.loga("RRSE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-        try {
-
-            resultado.write(testaClasse(test, svm, "Sim", trainSize, "RRSE"));
-            resultado.newLine();
-        } catch (Exception ex) {
-            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-        }
-//        //Constroi modelo com Grid Search antes com KAPPA (Sempre o mesmo valor)
-//        svm = buildSVM();
-//        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_KAPPA, GridSearch.TAGS_EVALUATION));
-//        constroiClassificador(svm, train);
-//        Log.loga("KAPPA - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-//        try {
-//            resultado.write(testaClasse(test, svm, "Sim", trainSize, "KAPPA"));
-//            resultado.newLine();
-//        } catch (Exception ex) {
-//            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-//        }
-        //Constroi modelo com Grid Search antes com COMBINED
-        svm = buildSVM();
-        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_COMBINED, GridSearch.TAGS_EVALUATION));
-        constroiClassificador(svm, train);
-        Log.loga("COMBINED - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-        try {
-            resultado.write(testaClasse(test, svm, "Sim", trainSize, "COMBINED"));
-            resultado.newLine();
-        } catch (Exception ex) {
-            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-        }
-
-        //Constroi modelo com Grid Search antes com RAE
-        svm = buildSVM();
-        svm = GridSearch(svm, train, new SelectedTag(GridSearch.EVALUATION_RAE, GridSearch.TAGS_EVALUATION));
-        constroiClassificador(svm, train);
-        Log.loga("RAE - COST: " + svm.getCost() + " gamma: " + svm.getGamma(), "SVM");
-        try {
-            resultado.write(testaClasse(test, svm, "Sim", trainSize, "RAE"));
-            resultado.newLine();
-        } catch (Exception ex) {
-            throw new WekaSVMException("Não foi possível gravar o arquivo de saída");
-        }
-
-    }
-
-    //Recebe a instância de teste e o modelo
-    private String testaClasse(Instances test, LibSVM model, String gridSearch, int trainSize, String evaluation) throws
-            Exception {
         //Obtém o valor real do atributo
-        double real = test.instance(0).classValue();
-        //Valor predito
-        double predict = model.classifyInstance(test.instance(0));
-        //Diferença entre o real e o predito
-        double diff = real - predict;
+        real = test.instance(0).classValue();
+        try {
+            //Valor predito
+            predict = svm.classifyInstance(test.instance(0));
+        } catch (Exception ex) {
+            Logger.getLogger(WekaSVM.class.getName()).log(Level.SEVERE, null, ex);
+        }
         //Ajusta a tabela de percentual de acerto
-        double percentualAcerto = (predict * 100) / real;
+        percentualAcerto = (predict * 100) / real;
 
-        double diffMod = diff;
+        //Diferença em módulo
+        diffMod = real - predict;
         if (diffMod < 0) {
             diffMod = diffMod * -1;
         }
-
-        StringBuilder linha = new StringBuilder();
-        linha.append(nomArqARFF);
-        linha.append(";");
-        linha.append(gridSearch);
-        linha.append(";");
-        linha.append(trainSize);
-        linha.append(";");
-        linha.append(evaluation);
-        linha.append(";");
-        linha.append(EditaValores.edita2DecVirgula(real));
-        linha.append(";");
-        linha.append(EditaValores.edita2DecVirgula(predict));
-        linha.append(";");
-        linha.append(EditaValores.edita2DecVirgula(diff));
-        linha.append(";");
-        linha.append(EditaValores.edita2DecVirgula(diffMod));
-        linha.append(";");
-        linha.append(EditaValores.edita2DecVirgula(percentualAcerto));
-
-        //Retorna a linha montada
-        return linha.toString();
-
     }
 
     private LibSVM buildSVM() throws WekaSVMException {
@@ -339,38 +200,78 @@ public class WekaSVM {
         return file.getName();
     }
 
-    public double getValorFechamentoPredito() {
-        return valorFechamentoPredito;
+    public double getCost() {
+        return cost;
     }
 
-    public double getDifValorPredito() {
-        return difValorPredito;
+    public double getGamma() {
+        return gamma;
     }
 
-    public double getPercentualValorPredito() {
-        return percentualValorPredito;
+    public double getReal() {
+        return real;
     }
-    //Calcula o desvio padrão
 
-    private double desvioPadrao(double[] valores) {
+    public double getPredict() {
+        return predict;
+    }
 
-        double media = 0;
+    public double getPercentualAcerto() {
+        return percentualAcerto;
+    }
 
-        for (int i = 0; i < valores.length; i++) {
-            media += valores[i];
+    public double getDiffMod() {
+        return diffMod;
+    }
+
+    public String getNomArqARFF() {
+        return nomArqARFF;
+    }
+
+    public Instances getDataSet() {
+        return dataSet;
+    }
+
+    public int getDia() {
+        return dia;
+    }
+
+    public int getTrainSize() {
+        return trainSize;
+    }
+
+    public int getGridSearchEvaluation() {
+        return gridSearchEvaluation;
+    }
+
+    public String getGridSearchEvaluationAlfa() throws WekaSVMException {
+
+        switch (gridSearchEvaluation) {
+            case GridSearch.EVALUATION_COMBINED:
+                return "COMBINED";
+            case GridSearch.EVALUATION_MAE:
+                return "MAE";
+            case GridSearch.EVALUATION_RAE:
+                return "RAE";
+            case GridSearch.EVALUATION_RMSE:
+                return "RMSE";
+            case GridSearch.EVALUATION_RRSE:
+                return "RRSE";
+            default:
+                throw new WekaSVMException("GridSearch com opção não reconhecida");
         }
-        //Calcula a média dos valores
-        media = media / valores.length;
 
-        double variancia = 0;
-
-        for (int i = 0; i < valores.length; i++) {
-            variancia += Math.pow(valores[i] - media, 2);
+    }
+    
+    
+    
+    
+    @Override
+    public void run() {
+        try {
+            perfomanceAnalysis();
+        } catch (WekaSVMException ex) {
+            Logger.getLogger(WekaSVM.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //Calcula a variância dos valores
-        variancia = variancia / valores.length;
-
-        //Retorna o desvio padrão
-        return Math.sqrt(variancia);
     }
 }

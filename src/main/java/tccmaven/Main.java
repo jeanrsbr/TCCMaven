@@ -14,7 +14,8 @@ import tccmaven.ARFF.GeraArquivoARFF;
 import java.io.IOException;
 import tccmaven.ARFF.PARAMETROS.IndicadoresException;
 import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
-import tccmaven.SVM.WekaSVM;
+import tccmaven.SVM.SVMAnalisador;
+import tccmaven.SVM.SVMAnalisadorException;
 import tccmaven.SVM.WekaSVMException;
 
 /**
@@ -46,19 +47,20 @@ public class Main {
 
                 //Obtém os ativos de cada país
                 String[] atiPaises = ativos[i].split(";");
-                
+
                 //Criar arquivo ARFF
                 Log.loga("Será gerado o arquivo ARFF");
                 //Instância a geração de arquivos ARFF
-                GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(atiPaises[0], atiPaises[1]);              
+                GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(atiPaises[0], atiPaises[1]);
                 //Gera o arquivo ARFF com a quantidade de ativos indicada no properties
                 String arquivoARFF = geraArquivoARFF.geraArquivo();
 
                 //Executar algoritmo SVM
-                WekaSVM wekaSVM = new WekaSVM(arquivoARFF);
-                wekaSVM.perfomanceAnalysis();
+                SVMAnalisador sVMAnalisador = new SVMAnalisador(arquivoARFF);
+                sVMAnalisador.executaAnalise();
+
             }
-        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | WekaSVMException | IndicadoresException | NomeParametrosException ex) {
+        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | WekaSVMException | IndicadoresException | NomeParametrosException | SVMAnalisadorException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
