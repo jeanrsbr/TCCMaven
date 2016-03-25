@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import tccmaven.MISC.Log;
@@ -32,73 +31,69 @@ public class WekaSVM implements Runnable {
 
     private String nomArqARFF;
     private Instances dataSet;
-    //Parâmetros de entrada
-    private int dia;
-    private int trainSize;
-    private int gridSearchEvaluation;
+    private ParametroSVM parametrosSVM;
+    private int iD; //Id de identificação dos parâmetros e resultados
     //Parâmetros ótimos da SVM
-    private double cost;
-    private double gamma;
+    //private double cost;
+    //private double gamma;
     //Parâmetros da predição
-    private double real;
-    private double predict;
-    private double percentualAcerto;
-    private double diffMod;
 
-    public WekaSVM(String arqARFF, int dia, int trainSize, int gridSearchEvaluation) throws WekaSVMException {
+    public WekaSVM(String arqARFF, ParametroSVM parametrosSVM, int iD) throws WekaSVMException {
         dataSet = buildBase(arqARFF);
         nomArqARFF = getName(arqARFF);
-        this.dia = dia;
-        this.trainSize = trainSize;
-        this.gridSearchEvaluation = gridSearchEvaluation;
-
+        this.parametrosSVM = parametrosSVM;
     }
 
     //Realiza o teste de performance do modelo construído
     public void perfomanceAnalysis() throws WekaSVMException {
 
         //Se o SET de treino for maior que o SET disponível
-        if ((trainSize + dia) > dataSet.numInstances()) {
+        if ((parametrosSVM.getTamanhoDoConjunto() + parametrosSVM.getDiaInicial()) > dataSet.numInstances()) {
             throw new WekaSVMException("Set de treino muito grande");
         }
 
-        Instances train = new Instances(dataSet, dataSet.numInstances() - dia - trainSize, trainSize);
-        Instances test = new Instances(dataSet, dataSet.numInstances() - dia, 1);
+        Instances train = new Instances(dataSet, dataSet.numInstances() - parametrosSVM.getDiaInicial() - parametrosSVM.
+                getTamanhoDoConjunto(), parametrosSVM.getTamanhoDoConjunto());
+        Instances test = new Instances(dataSet, dataSet.numInstances() - parametrosSVM.getDiaInicial(), 1);
 
         train.setClassIndex(train.numAttributes() - 1);
         test.setClassIndex(test.numAttributes() - 1);
 
         LibSVM svm = buildSVM();
-        svm = GridSearch(svm, train, new SelectedTag(gridSearchEvaluation, GridSearch.TAGS_EVALUATION));
+        svm
+                = GridSearch(svm, train, new SelectedTag(parametrosSVM.getGridSearchEvaluation(), GridSearch.TAGS_EVALUATION));
         constroiClassificador(svm, train);
 
+        Log.loga("EVALUATION:" + getGridSearchEvaluationAlfa() + " COST:" + svm.getCost() + " gamma:" + svm.getGamma(), "SVM");
 
-        cost = svm.getCost();
-        gamma = svm.getGamma();
+        //cost = svm.getCost();
+        //gamma = svm.getGamma();
+        ResultadoSVM resultadoSVM = new ResultadoSVM();
 
-        //Obtém o valor real do atributo
-        real = test.instance(0).classValue();
+        double real = test.instance(0).classValue();
+        double predict = 0;
         try {
-            //Valor predito
             predict = svm.classifyInstance(test.instance(0));
         } catch (Exception ex) {
             Logger.getLogger(WekaSVM.class.getName()).log(Level.SEVERE, null, ex);
         }
-        //Ajusta a tabela de percentual de acerto
-        percentualAcerto = (predict * 100) / real;
 
+        //Valor real
+        resultadoSVM.setReal(real);
+        //Valor predito
+        resultadoSVM.setPredict(predict);
+        //Percentual de acerto
+        resultadoSVM.setPercentualAcerto(real, predict);
         //Diferença em módulo
-        diffMod = real - predict;
-        if (diffMod < 0) {
-            diffMod = diffMod * -1;
-        }
+        resultadoSVM.setDiffMod(real, predict);
+
+        //Insere os parâmetros no manipulador de resultado
+        ManipuladorResultadosSVM.getInstance().insereResultado(iD, resultadoSVM);
+
     }
 
     private LibSVM buildSVM() throws WekaSVMException {
         try {
-
-            PrintStream def = new PrintStream(System.out);
-            System.setOut(new PrintStream("output_weka.txt"));
 
             LibSVM svm = new LibSVM();
             svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_NU_SVR, LibSVM.TAGS_SVMTYPE));
@@ -119,8 +114,6 @@ public class WekaSVM implements Runnable {
             svm.setWeights("");
             svm.setDebug(false);
 
-            System.setOut(def);
-
             return svm;
         } catch (Exception ex) {
             throw new WekaSVMException("Não foi possível executar o algoritmo de predição");
@@ -130,10 +123,7 @@ public class WekaSVM implements Runnable {
     private void constroiClassificador(LibSVM svm, Instances train) throws WekaSVMException {
 
         try {
-            PrintStream def = new PrintStream(System.out);
-            System.setOut(new PrintStream("output_weka.txt"));
             svm.buildClassifier(train);
-            System.setOut(def);
         } catch (Exception ex) {
             Log.loga("Excecão");
         }
@@ -141,13 +131,6 @@ public class WekaSVM implements Runnable {
     }
 
     private LibSVM GridSearch(LibSVM svm, Instances train, SelectedTag selectedTag) throws WekaSVMException {
-
-        PrintStream def = new PrintStream(System.out);
-        try {
-            System.setOut(new PrintStream("output_weka.txt"));
-        } catch (Exception ex) {
-            throw new WekaSVMException("Não foi possível direcionar a saída para outro caminho");
-        }
 
         GridSearch gridSearch = new GridSearch();
         gridSearch.setClassifier(svm);
@@ -175,7 +158,6 @@ public class WekaSVM implements Runnable {
             Log.loga("Excecão");
         }
 
-        System.setOut(def);
         return (LibSVM) gridSearch.getBestClassifier();
 
     }
@@ -200,30 +182,6 @@ public class WekaSVM implements Runnable {
         return file.getName();
     }
 
-    public double getCost() {
-        return cost;
-    }
-
-    public double getGamma() {
-        return gamma;
-    }
-
-    public double getReal() {
-        return real;
-    }
-
-    public double getPredict() {
-        return predict;
-    }
-
-    public double getPercentualAcerto() {
-        return percentualAcerto;
-    }
-
-    public double getDiffMod() {
-        return diffMod;
-    }
-
     public String getNomArqARFF() {
         return nomArqARFF;
     }
@@ -232,21 +190,9 @@ public class WekaSVM implements Runnable {
         return dataSet;
     }
 
-    public int getDia() {
-        return dia;
-    }
-
-    public int getTrainSize() {
-        return trainSize;
-    }
-
-    public int getGridSearchEvaluation() {
-        return gridSearchEvaluation;
-    }
-
     public String getGridSearchEvaluationAlfa() throws WekaSVMException {
 
-        switch (gridSearchEvaluation) {
+        switch (parametrosSVM.getGridSearchEvaluation()) {
             case GridSearch.EVALUATION_COMBINED:
                 return "COMBINED";
             case GridSearch.EVALUATION_MAE:
@@ -262,14 +208,12 @@ public class WekaSVM implements Runnable {
         }
 
     }
-    
-    
-    
-    
+
     @Override
     public void run() {
         try {
             perfomanceAnalysis();
+
         } catch (WekaSVMException ex) {
             Logger.getLogger(WekaSVM.class.getName()).log(Level.SEVERE, null, ex);
         }

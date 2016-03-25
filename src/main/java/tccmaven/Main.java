@@ -39,6 +39,11 @@ public class Main {
                 return;
             }
 
+            //Inicializa o buffer
+            Log.iniBuf();
+            //Desvias as saídas
+            Log.setDesvio();
+
             //Obtém a lista de ativos que devem ser importados
             String[] ativos = LeituraProperties.getInstance().leituraProperties("prop.ativos").split("#");
 

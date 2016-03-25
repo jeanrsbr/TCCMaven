@@ -1,5 +1,0 @@
-....*
-optimization finished, #iter = 692
-epsilon = 0.10811774940876173
-obj = -61.22717944971585, rho = -8.348578166034496
-nSV = 48, nBSV = 23
