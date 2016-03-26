@@ -84,6 +84,10 @@ public class WekaSVM implements Runnable {
 
         //Insere os parâmetros no manipulador de resultado
         ManipuladorResultadoSVM.getInstance().putResultado(iD, resultadoSVM);
+        
+        //Atualiza os parâmetros com o custo e o gamma utilizado
+        parametrosSVM.setCost(svm.getCost());
+        parametrosSVM.setGamma(svm.getGamma());
 
     }
 

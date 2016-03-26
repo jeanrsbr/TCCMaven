@@ -15,6 +15,25 @@ public class ParametroSVM {
     private int diaInicial; // Dia inicial para treino do conjunto (De trás para frente)
     private int tamanhoDoConjunto; // Tamanho do conjunto de treino
     private int gridSearchEvaluation; //Tipo de avaliação do GridSearch
+    
+    private double gamma;
+    private double cost;
+
+    public double getGamma() {
+        return gamma;
+    }
+
+    public void setGamma(double gamma) {
+        this.gamma = gamma;
+    }
+
+    public double getCost() {
+        return cost;
+    }
+
+    public void setCost(double cost) {
+        this.cost = cost;
+    }
 
     public ParametroSVM(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation) {
         this.diaInicial = diaInicial;

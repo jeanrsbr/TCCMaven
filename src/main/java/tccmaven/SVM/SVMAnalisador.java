@@ -86,7 +86,7 @@ public class SVMAnalisador {
             BufferedWriter resultado = new BufferedWriter(strWriter);
 
             //Cabeçalho
-            resultado.write("ativo;tam_treino;evaluation;valor_real;valor_predito;diffMod;perc_acerto");
+            resultado.write("ativo;cost;gamma;tam_treino;evaluation;valor_real;valor_predito;diffMod;perc_acerto");
             resultado.newLine();
 
             Log.loga("Iniciando exportação do arquivo CSV", "SVM");
@@ -109,6 +109,10 @@ public class SVMAnalisador {
         StringBuilder linha = new StringBuilder();
         linha.append(getName());
         linha.append(";");
+        linha.append(EditaValores.editaVirgula(parametroSVM.getCost()));
+        linha.append(";");
+        linha.append(EditaValores.editaVirgula(parametroSVM.getGamma()));
+        linha.append(";");        
         linha.append(parametroSVM.getTamanhoDoConjunto());
         linha.append(";");
         linha.append(parametroSVM.getGridSearchEvaluationAlfa());

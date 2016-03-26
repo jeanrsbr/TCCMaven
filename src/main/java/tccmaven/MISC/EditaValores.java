@@ -29,4 +29,11 @@ public class EditaValores {
         f.setMaximumFractionDigits(2);
         return f.format(valor.doubleValue());
     }
+
+    public static String editaVirgula(Double valor) {
+        NumberFormat f = NumberFormat.getInstance();
+        f.setGroupingUsed(false);        
+        f.setMaximumFractionDigits(10);
+        return f.format(valor.doubleValue());
+    }
 }
