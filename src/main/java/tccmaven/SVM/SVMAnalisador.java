@@ -34,6 +34,8 @@ public class SVMAnalisador {
         try {
             ArrayList<ParametroSVM> analise = populaAnalise();
 
+            Log.loga(String.valueOf(Thread.activeCount()));
+
             int count = 0;
 
             //Varre as opções de análise
@@ -49,25 +51,28 @@ public class SVMAnalisador {
                         //Espera 1 segundo para conferir novamente
                         Thread.sleep(1000);
                     }
-
                 }
             }
 
-            //Aguarda 10 segundos, para que todas as threads sejam finalizadas
-            Thread.sleep(10000);
+            //Se processou todas as threads
+            while (true) {
+                if (Thread.activeCount() == 1) {
+                    break;
+                } else {
+                    //Espera 1 segundo para conferir novamente
+                    Thread.sleep(1000);
+                }
+            }
 
         } catch (WekaSVMException | InterruptedException ex) {
             throw new SVMAnalisadorException("Não foi possível executar a predição");
         }
 
-
     }
 
-    
-    
-    
-    private void criaCSV(ArrayList<ParametroSVM> analise) throws SVMAnalisadorException, WekaSVMException, ParametroSVMException{
-        
+    private void criaCSV(ArrayList<ParametroSVM> analise) throws SVMAnalisadorException, WekaSVMException,
+            ParametroSVMException {
+
         try {
             //Abre o arquivo CSV de resultados
             File file = new File("teste/resultado_" + nomArqARFF.split(".arff")[0] + ".csv");
@@ -90,12 +95,11 @@ public class SVMAnalisador {
         } catch (IOException ex) {
             throw new SVMAnalisadorException("Não foi possível criar o arquivo de resultado");
         }
-        
-        
-        
-        
+
     }
-    private String montaLinha(ParametroSVM parametroSVM, ResultadoSVM resultadoSVM) throws WekaSVMException, ParametroSVMException {
+
+    private String montaLinha(ParametroSVM parametroSVM, ResultadoSVM resultadoSVM) throws WekaSVMException,
+            ParametroSVMException {
 
         StringBuilder linha = new StringBuilder();
         linha.append(getName());
@@ -116,15 +120,13 @@ public class SVMAnalisador {
         return linha.toString();
 
     }
-    
+
     //Retorna o nome do arquivo
     private String getName() {
         File file = new File(nomArqARFF);
         return file.getName();
     }
 
-    
-    
     private ArrayList populaAnalise() {
 
         //Instância o array de análise
@@ -162,12 +164,11 @@ public class SVMAnalisador {
 //            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RMSE));
 //            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RRSE));
 //            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_COMBINED));
-
             parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_MAE));
-            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_RAE));
-            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_RMSE));
-            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_RRSE));
-            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_COMBINED));
+//            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_RAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_RMSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_RRSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_COMBINED));
 
         }
 

@@ -12,7 +12,6 @@
 package tccmaven.SVM;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -32,10 +31,6 @@ public class WekaSVM implements Runnable {
     private Instances dataSet;
     private ParametroSVM parametrosSVM;
     private int iD; //Id de identificação dos parâmetros e resultados
-    //Parâmetros ótimos da SVM
-    //private double cost;
-    //private double gamma;
-    //Parâmetros da predição
 
     public WekaSVM(String arqARFF, ParametroSVM parametrosSVM, int iD) throws WekaSVMException {
         dataSet = buildBase(arqARFF);
@@ -63,7 +58,8 @@ public class WekaSVM implements Runnable {
                 = GridSearch(svm, train, new SelectedTag(parametrosSVM.getGridSearchEvaluation(), GridSearch.TAGS_EVALUATION));
         constroiClassificador(svm, train);
 
-        Log.loga("EVALUATION:" + parametrosSVM.getGridSearchEvaluationAlfa() + " COST:" + svm.getCost() + " gamma:" + svm.getGamma(), "SVM");
+        Log.loga("EVALUATION:" + parametrosSVM.getGridSearchEvaluationAlfa() + " COST:" + svm.getCost() + " gamma:" +
+                svm.getGamma(), "SVM");
 
         //cost = svm.getCost();
         //gamma = svm.getGamma();
@@ -132,22 +128,23 @@ public class WekaSVM implements Runnable {
     private LibSVM GridSearch(LibSVM svm, Instances train, SelectedTag selectedTag) throws WekaSVMException {
 
         GridSearch gridSearch = new GridSearch();
+        gridSearch.setDebug(false);
         gridSearch.setClassifier(svm);
         gridSearch.setEvaluation(selectedTag);
 
         //evalaute C 12^-5, 2^-4,..,2^2.
         gridSearch.setXProperty("classifier.cost");
-        gridSearch.setXMin(-10);
-        gridSearch.setXMax(20);
-        gridSearch.setXStep(0.5);
+        gridSearch.setXMin(-5);
+        gridSearch.setXMax(15);
+        gridSearch.setXStep(1);
         gridSearch.setXBase(2);
         gridSearch.setXExpression("pow(BASE,I)");
 
         // evaluate gamma s 2^-5, 2^-4,..,2^2.
         gridSearch.setYProperty("classifier.gamma");
-        gridSearch.setYMin(-20);
-        gridSearch.setYMax(5);
-        gridSearch.setYStep(0.5);
+        gridSearch.setYMin(-15);
+        gridSearch.setYMax(3);
+        gridSearch.setYStep(1);
         gridSearch.setYBase(2);
         gridSearch.setYExpression("pow(BASE,I)");
 
@@ -178,8 +175,6 @@ public class WekaSVM implements Runnable {
     public Instances getDataSet() {
         return dataSet;
     }
-
-    
 
     @Override
     public void run() {
