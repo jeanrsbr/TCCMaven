@@ -22,40 +22,21 @@ public class Log {
     public static void iniBuf() throws FileNotFoundException {
         defOut = new PrintStream(System.out);
         defErr = new PrintStream(System.err);
-    }
-
-    public static void setDef() {
-        System.setOut(defOut);
-        System.setErr(defErr);
-    }
-
-    public static void setDesvio() throws FileNotFoundException {
 
         System.setOut(new PrintStream("output_weka_out.txt"));
         System.setErr(new PrintStream("output_weka_err.txt"));
+
     }
 
     public static void loga(String mensagem) {
-        setDef();
         if (log == 1) {
-            System.out.println(mensagem);
-        }
-        try {
-            setDesvio();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Log.class.getName()).log(Level.SEVERE, null, ex);
+            defOut.println(mensagem);
         }
     }
 
     public static void loga(String mensagem, String titulo) {
-        setDef();
         if (log == 1) {
-            System.out.println("[" + String.format("%12s", titulo) + "]:" + mensagem);
-        }
-        try {
-            setDesvio();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Log.class.getName()).log(Level.SEVERE, null, ex);
+            defOut.println("[" + String.format("%12s", titulo) + "]:" + mensagem);
         }
     }
 }

@@ -4,6 +4,8 @@
  */
 package tccmaven.SVM;
 
+import weka.classifiers.meta.GridSearch;
+
 /**
  *
  * @author Jean-NoteI5
@@ -32,6 +34,24 @@ public class ParametroSVM {
         return gridSearchEvaluation;
     }
     
+    public String getGridSearchEvaluationAlfa() throws ParametroSVMException{
+
+        switch (gridSearchEvaluation) {
+            case GridSearch.EVALUATION_COMBINED:
+                return "COMBINED";
+            case GridSearch.EVALUATION_MAE:
+                return "MAE";
+            case GridSearch.EVALUATION_RAE:
+                return "RAE";
+            case GridSearch.EVALUATION_RMSE:
+                return "RMSE";
+            case GridSearch.EVALUATION_RRSE:
+                return "RRSE";
+            default:
+                throw new ParametroSVMException("GridSearch com opção não reconhecida");
+        }
+
+    }
     
     
 }

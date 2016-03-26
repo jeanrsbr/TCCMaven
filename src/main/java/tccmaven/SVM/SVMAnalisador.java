@@ -10,9 +10,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import tccmaven.MISC.EditaValores;
 import tccmaven.MISC.LeituraProperties;
+import tccmaven.MISC.Log;
 import weka.classifiers.meta.GridSearch;
 
 /**
@@ -38,9 +38,9 @@ public class SVMAnalisador {
 
             //Varre as opções de análise
             for (int i = 0; i < analise.size(); i++) {
-                count++;
-                new Thread(new WekaSVM(nomArqARFF, analise.get(i), count)).start();
 
+                new Thread(new WekaSVM(nomArqARFF, analise.get(i), i)).start();
+                count++;
 
                 while (true) {
                     if (ManipuladorResultadosSVM.getInstance().getOco() > count - numThreads) {
@@ -60,57 +60,71 @@ public class SVMAnalisador {
             throw new SVMAnalisadorException("Não foi possível executar a predição");
         }
 
-//        try {
-//            //Abre o arquivo CSV de resultados
-//            File file = new File("teste/resultado_" + nomArqARFF.split(".arff")[0] + ".csv");
-//            FileOutputStream arquivoGravacao = new FileOutputStream(file);
-//            OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);
-//            BufferedWriter resultado = new BufferedWriter(strWriter);
-//
-//            //Cabeçalho
-//            resultado.write("ativo;tam_treino;evaluation;valor_real;valor_predito;diffMod;perc_acerto");
-//            resultado.newLine();
-//
-//            //Log.loga("Iniciando exportação com conjunto de " + trainSize + " dias do dia " + dia, "SVM");
-//            //Varre as opções de análise
-//            for (int i = 0; i < analise.size(); i++) {
-//
-//                new Thread(new WekaSVM(nomArqARFF, analise.get(i), i));
-//
-////
-////                resultado.write(montaLinha(wekaSVM[0]));
-////                resultado.newLine();
-//            }
-//
-//            resultado.flush();
-//            resultado.close();
-//        } catch (IOException ex) {
-//            throw new SVMAnalisadorException("Não foi possível criar o arquivo de resultado");
-//        }
 
     }
 
-//    private String montaLinha(WekaSVM wekaSVM) throws WekaSVMException {
-//
-//        StringBuilder linha = new StringBuilder();
-//        linha.append(wekaSVM.getNomArqARFF());
-//        linha.append(";");
-//        linha.append(wekaSVM.getTrainSize());
-//        linha.append(";");
-//        linha.append(wekaSVM.getGridSearchEvaluationAlfa());
-//        linha.append(";");
-//        linha.append(EditaValores.edita2DecVirgula(wekaSVM.getReal()));
-//        linha.append(";");
-//        linha.append(EditaValores.edita2DecVirgula(wekaSVM.getPredict()));
-//        linha.append(";");
-//        linha.append(EditaValores.edita2DecVirgula(wekaSVM.getDiffMod()));
-//        linha.append(";");
-//        linha.append(EditaValores.edita2DecVirgula(wekaSVM.getPercentualAcerto()));
-//
-//        //Retorna a linha montada
-//        return linha.toString();
-//
-//    }
+    
+    
+    
+    private void criaCSV(ArrayList<ParametroSVM> analise) throws SVMAnalisadorException, WekaSVMException, ParametroSVMException{
+        
+        try {
+            //Abre o arquivo CSV de resultados
+            File file = new File("teste/resultado_" + nomArqARFF.split(".arff")[0] + ".csv");
+            FileOutputStream arquivoGravacao = new FileOutputStream(file);
+            OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);
+            BufferedWriter resultado = new BufferedWriter(strWriter);
+
+            //Cabeçalho
+            resultado.write("ativo;tam_treino;evaluation;valor_real;valor_predito;diffMod;perc_acerto");
+            resultado.newLine();
+
+            Log.loga("Iniciando exportação do arquivo CSV", "SVM");
+            //Varre as opções de análise
+            for (int i = 0; i < analise.size(); i++) {
+                resultado.write(montaLinha(analise.get(i), ManipuladorResultadosSVM.getInstance().getResultado(i)));
+                resultado.newLine();
+            }
+            resultado.flush();
+            resultado.close();
+        } catch (IOException ex) {
+            throw new SVMAnalisadorException("Não foi possível criar o arquivo de resultado");
+        }
+        
+        
+        
+        
+    }
+    private String montaLinha(ParametroSVM parametroSVM, ResultadoSVM resultadoSVM) throws WekaSVMException, ParametroSVMException {
+
+        StringBuilder linha = new StringBuilder();
+        linha.append(getName());
+        linha.append(";");
+        linha.append(parametroSVM.getTamanhoDoConjunto());
+        linha.append(";");
+        linha.append(parametroSVM.getGridSearchEvaluationAlfa());
+        linha.append(";");
+        linha.append(EditaValores.edita2DecVirgula(resultadoSVM.getReal()));
+        linha.append(";");
+        linha.append(EditaValores.edita2DecVirgula(resultadoSVM.getPredict()));
+        linha.append(";");
+        linha.append(EditaValores.edita2DecVirgula(resultadoSVM.getDiffMod()));
+        linha.append(";");
+        linha.append(EditaValores.edita2DecVirgula(resultadoSVM.getPercentualAcerto()));
+
+        //Retorna a linha montada
+        return linha.toString();
+
+    }
+    
+    //Retorna o nome do arquivo
+    private String getName() {
+        File file = new File(nomArqARFF);
+        return file.getName();
+    }
+
+    
+    
     private ArrayList populaAnalise() {
 
         //Instância o array de análise
@@ -119,35 +133,35 @@ public class SVMAnalisador {
         //Realiza testes com os últimos 20 dias da amostra, com diversos tamanhos
         for (int i = 2; i < 22; i++) {
 
-            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_MAE));
-            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_RAE));
-            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_RMSE));
-            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_RRSE));
-            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_COMBINED));
-
-            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_MAE));
-            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_RAE));
-            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_RMSE));
-            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_RRSE));
-            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_COMBINED));
-
-            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_MAE));
-            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_RAE));
-            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_RMSE));
-            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_RRSE));
-            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_COMBINED));
-
-            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_MAE));
-            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_RAE));
-            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_RMSE));
-            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_RRSE));
-            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_COMBINED));
-
-            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_MAE));
-            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RAE));
-            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RMSE));
-            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RRSE));
-            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_COMBINED));
+//            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_MAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_RAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_RMSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_RRSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 25, GridSearch.EVALUATION_COMBINED));
+//
+//            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_MAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_RAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_RMSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_RRSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 30, GridSearch.EVALUATION_COMBINED));
+//
+//            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_MAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_RAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_RMSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_RRSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 35, GridSearch.EVALUATION_COMBINED));
+//
+//            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_MAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_RAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_RMSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_RRSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 40, GridSearch.EVALUATION_COMBINED));
+//
+//            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_MAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RAE));
+//            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RMSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_RRSE));
+//            parametrosSVMs.add(new ParametroSVM(i, 50, GridSearch.EVALUATION_COMBINED));
 
             parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_MAE));
             parametrosSVMs.add(new ParametroSVM(i, 70, GridSearch.EVALUATION_RAE));

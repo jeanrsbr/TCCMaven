@@ -29,7 +29,6 @@ import weka.core.SelectedTag;
  */
 public class WekaSVM implements Runnable {
 
-    private String nomArqARFF;
     private Instances dataSet;
     private ParametroSVM parametrosSVM;
     private int iD; //Id de identificação dos parâmetros e resultados
@@ -40,12 +39,12 @@ public class WekaSVM implements Runnable {
 
     public WekaSVM(String arqARFF, ParametroSVM parametrosSVM, int iD) throws WekaSVMException {
         dataSet = buildBase(arqARFF);
-        nomArqARFF = getName(arqARFF);
         this.parametrosSVM = parametrosSVM;
+        this.iD = iD;
     }
 
     //Realiza o teste de performance do modelo construído
-    public void perfomanceAnalysis() throws WekaSVMException {
+    public void perfomanceAnalysis() throws WekaSVMException, ParametroSVMException {
 
         //Se o SET de treino for maior que o SET disponível
         if ((parametrosSVM.getTamanhoDoConjunto() + parametrosSVM.getDiaInicial()) > dataSet.numInstances()) {
@@ -64,7 +63,7 @@ public class WekaSVM implements Runnable {
                 = GridSearch(svm, train, new SelectedTag(parametrosSVM.getGridSearchEvaluation(), GridSearch.TAGS_EVALUATION));
         constroiClassificador(svm, train);
 
-        Log.loga("EVALUATION:" + getGridSearchEvaluationAlfa() + " COST:" + svm.getCost() + " gamma:" + svm.getGamma(), "SVM");
+        Log.loga("EVALUATION:" + parametrosSVM.getGridSearchEvaluationAlfa() + " COST:" + svm.getCost() + " gamma:" + svm.getGamma(), "SVM");
 
         //cost = svm.getCost();
         //gamma = svm.getGamma();
@@ -88,7 +87,7 @@ public class WekaSVM implements Runnable {
         resultadoSVM.setDiffMod(real, predict);
 
         //Insere os parâmetros no manipulador de resultado
-        ManipuladorResultadosSVM.getInstance().insereResultado(iD, resultadoSVM);
+        ManipuladorResultadosSVM.getInstance().putResultado(iD, resultadoSVM);
 
     }
 
@@ -176,38 +175,11 @@ public class WekaSVM implements Runnable {
         }
     }
 
-    //Retorna o nome do arquivo
-    private String getName(String arqARFF) {
-        File file = new File(arqARFF);
-        return file.getName();
-    }
-
-    public String getNomArqARFF() {
-        return nomArqARFF;
-    }
-
     public Instances getDataSet() {
         return dataSet;
     }
 
-    public String getGridSearchEvaluationAlfa() throws WekaSVMException {
-
-        switch (parametrosSVM.getGridSearchEvaluation()) {
-            case GridSearch.EVALUATION_COMBINED:
-                return "COMBINED";
-            case GridSearch.EVALUATION_MAE:
-                return "MAE";
-            case GridSearch.EVALUATION_RAE:
-                return "RAE";
-            case GridSearch.EVALUATION_RMSE:
-                return "RMSE";
-            case GridSearch.EVALUATION_RRSE:
-                return "RRSE";
-            default:
-                throw new WekaSVMException("GridSearch com opção não reconhecida");
-        }
-
-    }
+    
 
     @Override
     public void run() {
@@ -215,6 +187,8 @@ public class WekaSVM implements Runnable {
             perfomanceAnalysis();
 
         } catch (WekaSVMException ex) {
+            Logger.getLogger(WekaSVM.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ParametroSVMException ex) {
             Logger.getLogger(WekaSVM.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

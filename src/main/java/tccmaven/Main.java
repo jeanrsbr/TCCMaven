@@ -16,7 +16,6 @@ import tccmaven.ARFF.PARAMETROS.IndicadoresException;
 import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
 import tccmaven.SVM.SVMAnalisador;
 import tccmaven.SVM.SVMAnalisadorException;
-import tccmaven.SVM.WekaSVMException;
 
 /**
  *
@@ -41,8 +40,6 @@ public class Main {
 
             //Inicializa o buffer
             Log.iniBuf();
-            //Desvias as saídas
-            Log.setDesvio();
 
             //Obtém a lista de ativos que devem ser importados
             String[] ativos = LeituraProperties.getInstance().leituraProperties("prop.ativos").split("#");
@@ -65,7 +62,7 @@ public class Main {
                 sVMAnalisador.executaAnalise();
 
             }
-        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | WekaSVMException | IndicadoresException | NomeParametrosException | SVMAnalisadorException ex) {
+        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | IndicadoresException | NomeParametrosException | SVMAnalisadorException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
