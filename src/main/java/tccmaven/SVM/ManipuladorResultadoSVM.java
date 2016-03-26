@@ -5,17 +5,16 @@
 package tccmaven.SVM;
 
 import java.util.TreeMap;
-import tccmaven.MISC.Log;
 
 /**
  * Descrição da classe.
  */
-public class ManipuladorResultadosSVM {
+public class ManipuladorResultadoSVM {
 
-    private static ManipuladorResultadosSVM instance;
+    private static ManipuladorResultadoSVM instance;
     private TreeMap<Double, ResultadoSVM> resultados;
 
-    private ManipuladorResultadosSVM() {
+    private ManipuladorResultadoSVM() {
         resultados = new TreeMap<>();
     }
 
@@ -35,9 +34,9 @@ public class ManipuladorResultadosSVM {
         return resultados.size();
     }
 
-    public static synchronized ManipuladorResultadosSVM getInstance() {
+    public static synchronized ManipuladorResultadoSVM getInstance() {
         if (instance == null) {
-            instance = new ManipuladorResultadosSVM();
+            instance = new ManipuladorResultadoSVM();
         }
         return instance;
     }

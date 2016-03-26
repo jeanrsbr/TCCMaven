@@ -14,8 +14,10 @@ import tccmaven.ARFF.GeraArquivoARFF;
 import java.io.IOException;
 import tccmaven.ARFF.PARAMETROS.IndicadoresException;
 import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
+import tccmaven.SVM.ParametroSVMException;
 import tccmaven.SVM.SVMAnalisador;
 import tccmaven.SVM.SVMAnalisadorException;
+import tccmaven.SVM.WekaSVMException;
 
 /**
  *
@@ -62,8 +64,8 @@ public class Main {
                 sVMAnalisador.executaAnalise();
 
             }
-        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | IndicadoresException | NomeParametrosException | SVMAnalisadorException ex) {
-            System.out.println(ex.getMessage());
+        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | IndicadoresException | NomeParametrosException | SVMAnalisadorException | WekaSVMException | ParametroSVMException ex) {
+            Log.loga(ex.getMessage());
             ex.printStackTrace();
         }
     }

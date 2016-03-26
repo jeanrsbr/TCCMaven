@@ -83,7 +83,7 @@ public class WekaSVM implements Runnable {
         resultadoSVM.setDiffMod(real, predict);
 
         //Insere os parâmetros no manipulador de resultado
-        ManipuladorResultadosSVM.getInstance().putResultado(iD, resultadoSVM);
+        ManipuladorResultadoSVM.getInstance().putResultado(iD, resultadoSVM);
 
     }
 
