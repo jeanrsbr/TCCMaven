@@ -137,7 +137,7 @@ public class WekaSVM implements Runnable {
 
         //evalaute C 12^-5, 2^-4,..,2^2.
         gridSearch.setXProperty("classifier.cost");
-        gridSearch.setXMin(-5);
+        gridSearch.setXMin(-15);
         gridSearch.setXMax(15);
         gridSearch.setXStep(1);
         gridSearch.setXBase(2);
@@ -146,7 +146,7 @@ public class WekaSVM implements Runnable {
         // evaluate gamma s 2^-5, 2^-4,..,2^2.
         gridSearch.setYProperty("classifier.gamma");
         gridSearch.setYMin(-15);
-        gridSearch.setYMax(3);
+        gridSearch.setYMax(10);
         gridSearch.setYStep(1);
         gridSearch.setYBase(2);
         gridSearch.setYExpression("pow(BASE,I)");
