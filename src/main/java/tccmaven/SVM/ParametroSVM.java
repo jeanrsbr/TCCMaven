@@ -4,6 +4,7 @@
  */
 package tccmaven.SVM;
 
+import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.GridSearch;
 
 /**
@@ -15,6 +16,7 @@ public class ParametroSVM {
     private int diaInicial; // Dia inicial para treino do conjunto (De trás para frente)
     private int tamanhoDoConjunto; // Tamanho do conjunto de treino
     private int gridSearchEvaluation; //Tipo de avaliação do GridSearch
+    private int kernel; //Kernel que será utilizado na SVM
     
     private double gamma;
     private double cost;
@@ -35,10 +37,11 @@ public class ParametroSVM {
         this.cost = cost;
     }
 
-    public ParametroSVM(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation) {
+    public ParametroSVM(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel) {
         this.diaInicial = diaInicial;
         this.tamanhoDoConjunto = tamanhoDoConjunto;
         this.gridSearchEvaluation = gridSearchEvaluation;
+        this.kernel = kernel;
     }    
 
     public int getDiaInicial() {
@@ -52,6 +55,11 @@ public class ParametroSVM {
     public int getGridSearchEvaluation() {
         return gridSearchEvaluation;
     }
+
+    public int getKernel() {
+        return kernel;
+    }
+    
     
     public String getGridSearchEvaluationAlfa() throws ParametroSVMException{
 
@@ -72,5 +80,19 @@ public class ParametroSVM {
 
     }
     
+    public String getKernelAlfa() throws ParametroSVMException {
+        
+        switch (kernel) {
+            case LibSVM.KERNELTYPE_RBF:
+                return "RBF";
+            case LibSVM.KERNELTYPE_POLYNOMIAL:
+                return "Polynomial";
+            case LibSVM.KERNELTYPE_SIGMOID:
+                return "Sigmoid";
+            default:
+                throw new ParametroSVMException("Kernel com opção não reconhecida");
+        }
+        
+    }
     
 }

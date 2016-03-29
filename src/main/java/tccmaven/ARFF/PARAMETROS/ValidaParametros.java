@@ -49,7 +49,7 @@ public class ValidaParametros {
             for (int j = 0; j < parametro.length; j++) {
                 //Varre os valores procurando alguma ocorrência que não foi preenchida
                 if (parametro[j] == -9999999999d) {
-                    Log.loga("Nem todas as ocorrências do array foram preenchidas");
+                    Log.loga("Nem todas as ocorrências do array foram preenchidas", "ARFF");
                     return false;
                 }
             }
@@ -62,48 +62,64 @@ public class ValidaParametros {
     private boolean validaCloseHighLow() throws NomeParametrosException {
 
         int closeBra = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Bra", "ClosePrice"));
-        int closeEst = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Est", "ClosePrice"));
+
+
+        int closeEst = 0;
+        boolean existCloseEst = false;
+        if (nomeParametros.verificaParametroExiste(nomeParametros.montaNomeParametro("Est", "ClosePrice"))) {
+            closeEst = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Est", "ClosePrice"));
+            existCloseEst = true;
+        }
 
         int highBra = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Bra", "HighPrice"));
-        int highEst = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Est", "HighPrice"));
+        int highEst = 0;
+        boolean existHighEst = false;
+        if (nomeParametros.verificaParametroExiste(nomeParametros.montaNomeParametro("Est", "HighPrice"))) {
+            highEst = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Est", "HighPrice"));
+            existHighEst = true;
+        }
 
         int lowBra = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Bra", "LowPrice"));
-        int lowEst = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Est", "LowPrice"));
+        int lowEst = 0;
+        boolean existLowEst = false;
+        if (nomeParametros.verificaParametroExiste(nomeParametros.montaNomeParametro("Est", "LowPrice"))) {
+            lowEst = nomeParametros.getOcoParametro(nomeParametros.montaNomeParametro("Est", "LowPrice"));
+            existLowEst = true;
+        }
 
         for (double[] parametro : parametros) {
             //Valor de fechamento maior que o valor máximo
             if (parametro[closeBra] > parametro[highBra]) {
-                Log.loga("Valor de fechamento Brasil maior que o valor máximo");
+                Log.loga("Valor de fechamento Brasil maior que o valor máximo", "ARFF");
                 return false;
             }
             //Valor de fechamento maior que o valor máximo
-            if (parametro[closeEst] > parametro[highEst]) {
-                Log.loga("Valor de fechamento Estrangeiro maior que o valor máximo");
+            if (existCloseEst && existHighEst && (parametro[closeEst] > parametro[highEst])) {
+                Log.loga("Valor de fechamento Estrangeiro maior que o valor máximo", "ARFF");
                 return false;
             }
             //Valor de fechamento menor que o valor mínimo
             if (parametro[closeBra] < parametro[lowBra]) {
-                Log.loga("Valor de fechamento Brasil menor que o valor mínimo");
+                Log.loga("Valor de fechamento Brasil menor que o valor mínimo", "ARFF");
                 return false;
             }
             //Valor de fechamento menor que o valor mínimo
-            if (parametro[closeEst] < parametro[lowEst]) {
-                Log.loga("Valor de fechamento Estrangeiro menor que o valor mínimo");
+            if (existCloseEst && existLowEst && (parametro[closeEst] < parametro[lowEst])) {
+                Log.loga("Valor de fechamento Estrangeiro menor que o valor mínimo", "ARFF");
                 return false;
             }
             //Valor máximo menor que o valor mínimo
             if (parametro[highBra] < parametro[lowBra]) {
-                Log.loga("Valor máximo Brasil menor que o valor mínimo");
+                Log.loga("Valor máximo Brasil menor que o valor mínimo", "ARFF");
                 return false;
             }
             //Valor máximo menor que o valor mínimo
-            if (parametro[highEst] < parametro[lowEst]) {
-                Log.loga("Valor máximo Estrangeiro menor que o valor mínimo");
+            if (existHighEst && existLowEst && (parametro[highEst] < parametro[lowEst])) {
+                Log.loga("Valor máximo Estrangeiro menor que o valor mínimo", "ARFF");
                 return false;
             }
         }
 
         return true;
     }
-
 }

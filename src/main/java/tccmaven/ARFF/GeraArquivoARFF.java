@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import tccmaven.MISC.LeituraProperties;
 import tccmaven.MISC.Log;
@@ -72,20 +71,23 @@ public class GeraArquivoARFF {
         indicadoresBra.setPaisBrasil();
         indicadoresBra.calculaIndicadoresSerie();
 
-        //Baixa arquivo CSV e Converte arquivo para memória
-        Log.loga("Importando o ativo " + ativoEst, "INSERÇÃO");
-        importador = new Importador(ativoEst);
-        timeseries = importador.montaTimeSeries();
-        Log.loga("Criada série temporal do ativo " + ativoEst + " com " + timeseries.getTickCount() + " registros", "INSERÇÃO");
-        insereParametros.insereSerieTemporalEstrangeiro(timeseries);
-        Log.loga("Inseridos parâmetros do ativo " + ativoEst + " com " + insereParametros.getNumReg() + " registros", "INSERÇÃO");
+        //Se possui ativo de outro país
+        if (ativoEst != null) {
+            //Baixa arquivo CSV e Converte arquivo para memória
+            Log.loga("Importando o ativo " + ativoEst, "INSERÇÃO");
+            importador = new Importador(ativoEst);
+            timeseries = importador.montaTimeSeries();
+            Log.loga("Criada série temporal do ativo " + ativoEst + " com " + timeseries.getTickCount() + " registros", "INSERÇÃO");
+            insereParametros.insereSerieTemporalEstrangeiro(timeseries);
+            Log.loga("Inseridos parâmetros do ativo " + ativoEst + " com " + insereParametros.getNumReg() + " registros", "INSERÇÃO");
 
-        //Calcula indicadores
-        Log.loga("Serão calculados os indicadores do ativo " + ativoEst, "INSERÇÃO");
-        //Instância os indicadores referenciando os parâmetros
-        Indicadores indicadoresEst = new Indicadores(insereParametros, timeseries, nomeParametros);
-        indicadoresEst.setPaisEstrangeiro();
-        indicadoresEst.calculaIndicadoresSerie();
+            //Calcula indicadores
+            Log.loga("Serão calculados os indicadores do ativo " + ativoEst, "INSERÇÃO");
+            //Instância os indicadores referenciando os parâmetros
+            Indicadores indicadoresEst = new Indicadores(insereParametros, timeseries, nomeParametros);
+            indicadoresEst.setPaisEstrangeiro();
+            indicadoresEst.calculaIndicadoresSerie();
+        }
 
         //------------------------- AJUSTE DOS PARAMETROS --------------------
         ArrayList<double[]> lista = insereParametros.getParametros();
@@ -127,13 +129,13 @@ public class GeraArquivoARFF {
             File dir = new File(diretorio);
             //Se o diretório existe
             if (!dir.exists()) {
-                Log.loga("O diretório " + dir.getAbsolutePath() + " para criação do arquivo ARFF não existe");
+                Log.loga("O diretório " + dir.getAbsolutePath() + " para criação do arquivo ARFF não existe", "ARFF");
                 throw new GeraArquivoARFFException("Não foi possível gerar o arquivo ARFF");
             }
 
             //Abre o arquivo
             File file = new File(diretorio + manipulaParametros.getAtivo() + extARFF);
-            Log.loga("Arquivo ARFF: " + file.getAbsolutePath());
+            Log.loga("Arquivo ARFF: " + file.getAbsolutePath(), "ARFF");
 
             FileOutputStream arquivoGravacao = new FileOutputStream(file);
             OutputStreamWriter strWriter = new OutputStreamWriter(arquivoGravacao);

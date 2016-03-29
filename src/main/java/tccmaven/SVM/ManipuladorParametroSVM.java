@@ -6,6 +6,7 @@ package tccmaven.SVM;
 
 import java.util.ArrayList;
 import tccmaven.MISC.LeituraProperties;
+import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.GridSearch;
 
 /**
@@ -45,15 +46,20 @@ public class ManipuladorParametroSVM {
     }
 
     private void populaGridSearchEvaluation(int diaInicial, int tamanhoDoConjunto) {
-        gravaParametro(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_MAE);
-        gravaParametro(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_RAE);
-        gravaParametro(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_RMSE);
-        gravaParametro(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_RRSE);
-        gravaParametro(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_COMBINED);
+        populaKernel(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_MAE);
+        populaKernel(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_RAE);
+        populaKernel(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_RMSE);
+        populaKernel(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_RRSE);
+        populaKernel(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_COMBINED);
 
     }
+    
+    private void populaKernel(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation){
+        gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_RBF);
+        gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_SIGMOID);
+    }
 
-    private void gravaParametro(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation) {
-        parametroSVM.add(new ParametroSVM(diaInicial, tamanhoDoConjunto, gridSearchEvaluation));
+    private void gravaParametro(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel) {
+        parametroSVM.add(new ParametroSVM(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel));
     }
 }

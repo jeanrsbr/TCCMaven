@@ -31,11 +31,11 @@ public class SVMAnalisador {
     public void executaAnalise() throws SVMAnalisadorException, WekaSVMException, ParametroSVMException {
 
         try {
-            
+
             ManipuladorParametroSVM manipuladorParametroSVM = new ManipuladorParametroSVM();
             manipuladorParametroSVM.populaAnalise();
             ArrayList<ParametroSVM> analise = manipuladorParametroSVM.getParametroSVM();
-            
+
             int count = 0;
 
             //Varre as opções de análise
@@ -66,13 +66,13 @@ public class SVMAnalisador {
 
             //Cria arquivo CSV
             criaCSV(analise);
-            
+
         } catch (WekaSVMException | InterruptedException ex) {
             throw new SVMAnalisadorException("Não foi possível executar a predição");
         }
 
-        
-        
+
+
     }
 
     private void criaCSV(ArrayList<ParametroSVM> analise) throws SVMAnalisadorException, WekaSVMException,
@@ -86,7 +86,7 @@ public class SVMAnalisador {
             BufferedWriter resultado = new BufferedWriter(strWriter);
 
             //Cabeçalho
-            resultado.write("ativo;cost;gamma;tam_treino;evaluation;valor_real;valor_predito;diffMod;perc_acerto");
+            resultado.write("ativo;cost;gamma;tam_treino;evaluation;kernel;valor_real;valor_predito;diffMod;perc_acerto");
             resultado.newLine();
 
             Log.loga("Iniciando exportação do arquivo CSV", "SVM");
@@ -112,10 +112,12 @@ public class SVMAnalisador {
         linha.append(EditaValores.editaVirgula(parametroSVM.getCost()));
         linha.append(";");
         linha.append(EditaValores.editaVirgula(parametroSVM.getGamma()));
-        linha.append(";");        
+        linha.append(";");
         linha.append(parametroSVM.getTamanhoDoConjunto());
         linha.append(";");
         linha.append(parametroSVM.getGridSearchEvaluationAlfa());
+        linha.append(";");
+        linha.append(parametroSVM.getKernelAlfa());
         linha.append(";");
         linha.append(EditaValores.edita2DecVirgula(resultadoSVM.getReal()));
         linha.append(";");
@@ -135,5 +137,4 @@ public class SVMAnalisador {
         File file = new File(nomArqARFF);
         return file.getName();
     }
-
 }

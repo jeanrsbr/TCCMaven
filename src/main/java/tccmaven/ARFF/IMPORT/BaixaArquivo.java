@@ -60,7 +60,7 @@ public class BaixaArquivo {
             URL url;
             //Monta URL para baixar a planilha CSV
             String url_yahoo = montaLink();
-            Log.loga(url_yahoo);
+            Log.loga(url_yahoo, "CSV");
             //Instância a URL que contém o arquivo CSV
             url = new URL(url_yahoo);
 

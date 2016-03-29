@@ -4,6 +4,8 @@
  */
 package tccmaven;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import tccmaven.MISC.LeituraProperties;
 import tccmaven.ARFF.PARAMETROS.InsereParametrosException;
 import tccmaven.ARFF.IMPORT.BaixaArquivoException;
@@ -39,6 +41,18 @@ public class Main {
                 System.out.println("É obrigatório informar a data inicial para importação");
                 return;
             }
+            
+            
+            File file = new File("teste/");
+            String[] lista = file.list();
+            for (int i = 0; i < lista.length; i++) {
+                
+                //Se for arquivo de resultado
+                if (lista[i].endsWith(".csv") && lista[i].startsWith("resultado_")){
+                    new File("teste/" + lista[i]).delete();
+                }
+            }
+            
 
             //Inicializa o buffer
             Log.iniBuf();
@@ -49,11 +63,17 @@ public class Main {
             //Varre a lista de ativos a serem importados
             for (int i = 0; i < ativos.length; i++) {
 
-                //Obtém os ativos de cada país
-                String[] atiPaises = ativos[i].split(";");
+                String[] atiPaises = new String[2];
+
+                if (ativos[i].contains(";")) {
+                    //Obtém os ativos de cada país
+                    atiPaises = ativos[i].split(";");
+                } else {
+                    atiPaises[0] = ativos[i];
+                }
 
                 //Criar arquivo ARFF
-                Log.loga("Será gerado o arquivo ARFF");
+                Log.loga("Será gerado o arquivo ARFF", "ARFF");
                 //Instância a geração de arquivos ARFF
                 GeraArquivoARFF geraArquivoARFF = new GeraArquivoARFF(atiPaises[0], atiPaises[1]);
                 //Gera o arquivo ARFF com a quantidade de ativos indicada no properties

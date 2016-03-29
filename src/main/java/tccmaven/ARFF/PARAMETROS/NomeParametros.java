@@ -92,6 +92,17 @@ public class NomeParametros {
         throw new NomeParametrosException("Não foi encontrada a ocorrência do parâmetro indicado");
     }
 
+    public boolean verificaParametroExiste(String nomeParametro) {
+        for (int i = 0; i < nomeParametros.length; i++) {
+
+            if (nomeParametros[i].equals(nomeParametro)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //Monta a literal de nome do parâmetro
     public String montaNomeParametro(String pais, String parametro, int periodo) {
         NumberFormat f = NumberFormat.getInstance();
