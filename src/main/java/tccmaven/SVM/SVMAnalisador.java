@@ -41,7 +41,14 @@ public class SVMAnalisador {
             //Varre as opções de análise
             for (int i = 0; i < analise.size(); i++) {
 
+                //THREAD
+                
                 new Thread(new WekaSVM(nomArqARFF, analise.get(i), i)).start();
+
+                //SEM THREAD
+//                WekaSVM bambu = new WekaSVM(nomArqARFF, analise.get(i), i);
+//                bambu.perfomanceAnalysis();
+                
                 count++;
 
                 while (true) {
