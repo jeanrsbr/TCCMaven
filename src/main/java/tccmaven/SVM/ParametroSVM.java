@@ -12,14 +12,23 @@ import weka.classifiers.meta.GridSearch;
  * @author Jean-NoteI5
  */
 public class ParametroSVM {
-    
+
     private int diaInicial; // Dia inicial para treino do conjunto (De trás para frente)
     private int tamanhoDoConjunto; // Tamanho do conjunto de treino
     private int gridSearchEvaluation; //Tipo de avaliação do GridSearch
     private int kernel; //Kernel que será utilizado na SVM
-    
+    private int type; //Tipo da SVM, usando apenas os dois tipos que são direcionados para problemas de regressão
+
     private double gamma;
     private double cost;
+
+    public ParametroSVM(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel, int type) {
+        this.diaInicial = diaInicial;
+        this.tamanhoDoConjunto = tamanhoDoConjunto;
+        this.gridSearchEvaluation = gridSearchEvaluation;
+        this.kernel = kernel;
+        this.type = type;
+    }
 
     public double getGamma() {
         return gamma;
@@ -37,12 +46,6 @@ public class ParametroSVM {
         this.cost = cost;
     }
 
-    public ParametroSVM(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel) {
-        this.diaInicial = diaInicial;
-        this.tamanhoDoConjunto = tamanhoDoConjunto;
-        this.gridSearchEvaluation = gridSearchEvaluation;
-        this.kernel = kernel;
-    }    
 
     public int getDiaInicial() {
         return diaInicial;
@@ -59,8 +62,11 @@ public class ParametroSVM {
     public int getKernel() {
         return kernel;
     }
-    
-    
+
+    public int getType() {
+        return type;
+    }
+
     public String getGridSearchEvaluationAlfa() throws ParametroSVMException{
 
         switch (gridSearchEvaluation) {
@@ -79,9 +85,9 @@ public class ParametroSVM {
         }
 
     }
-    
+
     public String getKernelAlfa() throws ParametroSVMException {
-        
+
         switch (kernel) {
             case LibSVM.KERNELTYPE_RBF:
                 return "RBF";
@@ -89,10 +95,23 @@ public class ParametroSVM {
                 return "Polynomial";
             case LibSVM.KERNELTYPE_SIGMOID:
                 return "Sigmoid";
+            case LibSVM.KERNELTYPE_LINEAR:
+                return "Linear";
             default:
                 throw new ParametroSVMException("Kernel com opção não reconhecida");
         }
-        
+
     }
-    
+
+    public String getTypeAlfa() throws ParametroSVMException {
+        switch (type) {
+            case LibSVM.SVMTYPE_NU_SVR:
+                return "NU_SVR";
+            case LibSVM.SVMTYPE_EPSILON_SVR:
+                return "EPSILON_SVR";
+            default:
+                throw new ParametroSVMException("Não encontrei o tipo da SVM");
+        }
+    }
+
 }

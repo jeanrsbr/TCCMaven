@@ -15,10 +15,10 @@ import weka.classifiers.meta.GridSearch;
  */
 public class ManipuladorParametroSVM {
 
-    private ArrayList<ParametroSVM> parametroSVM;
-    private int diasConjuntoTeste;
-    private int tamConjuntoIni;
-    private int tamConjuntoFin;
+    private final ArrayList<ParametroSVM> parametroSVM;
+    private final int diasConjuntoTeste;
+    private final int tamConjuntoIni;
+    private final int tamConjuntoFin;
 
     public ManipuladorParametroSVM() {
         this.diasConjuntoTeste = Integer.parseInt(LeituraProperties.getInstance().leituraProperties("svm.diasconjuntoteste"));
@@ -31,7 +31,7 @@ public class ManipuladorParametroSVM {
         return parametroSVM;
     }
     public void populaAnalise() {
-        //Começa em dois para descartar o último dia do conjunto onde não sabemos a cotação de amanhã e 
+        //Começa em dois para descartar o último dia do conjunto onde não sabemos a cotação de amanhã e
         //não temos como comparar com o valor predito
         for (int i = 2; i < diasConjuntoTeste + 2; i++) {
             populaTamanhoDoConjunto(i);
@@ -53,13 +53,21 @@ public class ManipuladorParametroSVM {
         populaKernel(diaInicial, tamanhoDoConjunto, GridSearch.EVALUATION_COMBINED);
 
     }
-    
+
     private void populaKernel(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation){
-        gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_RBF);
-        gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_SIGMOID);
+        populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_RBF);
+        //populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_SIGMOID);
+        //populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_POLYNOMIAL);
+        populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_LINEAR);
     }
 
-    private void gravaParametro(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel) {
-        parametroSVM.add(new ParametroSVM(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel));
+    private void populaTipo(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel){
+        gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel, LibSVM.SVMTYPE_EPSILON_SVR);
+        //gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel, LibSVM.SVMTYPE_NU_SVR);
+
+    }
+
+    private void gravaParametro(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel, int type) {
+        parametroSVM.add(new ParametroSVM(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel, type));
     }
 }

@@ -20,6 +20,9 @@ public class Log {
     private static PrintStream defErr;
 
     public static void iniBuf() throws FileNotFoundException {
+//        defOut = System.out;
+//        defErr = System.err;
+
         defOut = new PrintStream(System.out);
         defErr = new PrintStream(System.err);
 

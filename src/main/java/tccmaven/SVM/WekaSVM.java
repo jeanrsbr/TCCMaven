@@ -14,11 +14,13 @@ package tccmaven.SVM;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import tccmaven.MISC.Log;
 import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.GridSearch;
+import weka.core.Capabilities;
 import weka.core.Instances;
 import weka.core.SelectedTag;
 
@@ -54,11 +56,12 @@ public class WekaSVM implements Runnable {
         test.setClassIndex(test.numAttributes() - 1);
 
         LibSVM svm = buildSVM();
-        svm = GridSearch(svm, train, new SelectedTag(parametrosSVM.getGridSearchEvaluation(), GridSearch.TAGS_EVALUATION));
+        svm = GridSearch(svm, train);
         constroiClassificador(svm, train);
 
-        Log.loga("EVALUATION:" + parametrosSVM.getGridSearchEvaluationAlfa() + " KERNEL:" + parametrosSVM.getKernelAlfa() + " COST:" + svm.getCost() + " gamma:"
-                + svm.getGamma(), "SVM");
+        Log.loga("EVALUATION:" + parametrosSVM.getGridSearchEvaluationAlfa() + " KERNEL:" + parametrosSVM.
+                getKernelAlfa() + " TYPE:" + parametrosSVM.getTypeAlfa() + " COST:" + svm.getCost() + " gamma:" +
+                svm.getGamma(), "SVM");
 
         //cost = svm.getCost();
         //gamma = svm.getGamma();
@@ -94,7 +97,7 @@ public class WekaSVM implements Runnable {
         try {
 
             LibSVM svm = new LibSVM();
-            svm.setSVMType(new SelectedTag(LibSVM.SVMTYPE_EPSILON_SVR, LibSVM.TAGS_SVMTYPE));
+            svm.setSVMType(new SelectedTag(parametrosSVM.getType(), LibSVM.TAGS_SVMTYPE));
             svm.setCacheSize(500);
             svm.setCoef0(0.0);
             svm.setCost(1.0);
@@ -109,7 +112,6 @@ public class WekaSVM implements Runnable {
             svm.setNu(0.5);
             svm.setProbabilityEstimates(false);
             svm.setShrinking(true);
-            svm.setWeights("");
 
             return svm;
         } catch (Exception ex) {
@@ -127,13 +129,27 @@ public class WekaSVM implements Runnable {
 
     }
 
-    private LibSVM GridSearch(LibSVM svm, Instances train, SelectedTag selectedTag) throws WekaSVMException {
+    /*
+
+     -d degree : set degree in kernel function (default 3)
+     -g gamma : set gamma in kernel function (default 1/num_features)
+     -r coef0 : set coef0 in kernel function (default 0)
+     -c cost : set the parameter C of C-SVC, epsilon-SVR, and nu-SVR (default 1)
+     -n nu : set the parameter nu of nu-SVC, one-class SVM, and nu-SVR (default 0.5)
+     -p epsilon : set the epsilon in loss function of epsilon-SVR (default 0.1)
+     -m cachesize : set cache memory size in MB (default 100)
+     -e epsilon : set tolerance of termination criterion (default 0.001)
+     -h shrinking: whether to use the shrinking heuristics, 0 or 1 (default 1)
+     -b probability_estimates: whether to train a SVC or SVR model for probability estimates, 0 or 1 (default 0)
+     -wi weight: set the parameter C of class i to weight*C, for C-SVC (default 1)
+
+     */
+    private LibSVM GridSearch(LibSVM svm, Instances train) throws WekaSVMException {
 
         GridSearch gridSearch = new GridSearch();
         gridSearch.setDebug(false);
         gridSearch.setClassifier(svm);
-        gridSearch.setEvaluation(selectedTag);
-
+        gridSearch.setEvaluation(new SelectedTag(parametrosSVM.getGridSearchEvaluation(), GridSearch.TAGS_EVALUATION));
 
         //evalaute C 12^-5, 2^-4,..,2^2.
         gridSearch.setXProperty("classifier.cost");
@@ -157,7 +173,29 @@ public class WekaSVM implements Runnable {
             Log.loga("Excecão Grid Search", "EXCECÃO");
         }
 
-        return (LibSVM) gridSearch.getBestClassifier();
+        LibSVM bestClassifier = (LibSVM) gridSearch.getBestClassifier();
+
+//        gridSearch = new GridSearch();
+//        gridSearch.setDebug(false);
+//        gridSearch.setClassifier(bestClassifier);
+//        gridSearch.setEvaluation(new SelectedTag(parametrosSVM.getGridSearchEvaluation(), GridSearch.TAGS_EVALUATION));
+//
+//        //evalaute C 12^-5, 2^-4,..,2^2.
+//        gridSearch.setXProperty("classifier.cost");
+//        gridSearch.setXMin(-15);
+//        gridSearch.setXMax(15);
+//        gridSearch.setXStep(1);
+//        gridSearch.setXBase(2);
+//        gridSearch.setXExpression("pow(BASE,I)");
+//
+//        // evaluate gamma s 2^-5, 2^-4,..,2^2.
+//        gridSearch.setYProperty("classifier.gamma");
+//        gridSearch.setYMin(-15);
+//        gridSearch.setYMax(10);
+//        gridSearch.setYStep(1);
+//        gridSearch.setYBase(2);
+//        gridSearch.setYExpression("pow(BASE,I)");
+        return bestClassifier;
 
     }
 
@@ -190,4 +228,5 @@ public class WekaSVM implements Runnable {
             Logger.getLogger(WekaSVM.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
 }

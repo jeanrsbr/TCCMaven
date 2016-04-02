@@ -18,17 +18,17 @@ import tccmaven.MISC.Log;
  *
  * @author Jean-NoteI5
  */
-public class SVMAnalisador {
+public class SVMExecutor {
 
     private int numThreads;
     private String nomArqARFF;
 
-    public SVMAnalisador(String nomArqARFF) {
+    public SVMExecutor(String nomArqARFF) {
         this.nomArqARFF = nomArqARFF;
         numThreads = Integer.parseInt(LeituraProperties.getInstance().leituraProperties("thread.svm"));
     }
 
-    public void executaAnalise() throws SVMAnalisadorException, WekaSVMException, ParametroSVMException {
+    public void executaAnalise() throws SVMExecutorException, WekaSVMException, ParametroSVMException {
 
         try {
 
@@ -36,23 +36,20 @@ public class SVMAnalisador {
             manipuladorParametroSVM.populaAnalise();
             ArrayList<ParametroSVM> analise = manipuladorParametroSVM.getParametroSVM();
 
-            int count = 0;
-
             //Varre as opções de análise
             for (int i = 0; i < analise.size(); i++) {
 
-                //THREAD
-                
-                new Thread(new WekaSVM(nomArqARFF, analise.get(i), i)).start();
+//                //THREAD
+//                new Thread(new WekaSVM(nomArqARFF, analise.get(i), i)).start();
 
                 //SEM THREAD
-//                WekaSVM bambu = new WekaSVM(nomArqARFF, analise.get(i), i);
-//                bambu.perfomanceAnalysis();
-                
-                count++;
+                WekaSVM bambu = new WekaSVM(nomArqARFF, analise.get(i), i);
+                bambu.perfomanceAnalysis();
 
+
+                //Se processou todas as threads
                 while (true) {
-                    if (ManipuladorResultadoSVM.getInstance().getOco() > count - numThreads) {
+                    if (Thread.activeCount() != numThreads + 1) {
                         break;
                     } else {
                         //Espera 1 segundo para conferir novamente
@@ -60,6 +57,8 @@ public class SVMAnalisador {
                     }
                 }
             }
+
+
 
             //Se processou todas as threads
             while (true) {
@@ -75,14 +74,12 @@ public class SVMAnalisador {
             criaCSV(analise);
 
         } catch (WekaSVMException | InterruptedException ex) {
-            throw new SVMAnalisadorException("Não foi possível executar a predição");
+            throw new SVMExecutorException("Não foi possível executar a predição");
         }
-
-
 
     }
 
-    private void criaCSV(ArrayList<ParametroSVM> analise) throws SVMAnalisadorException, WekaSVMException,
+    private void criaCSV(ArrayList<ParametroSVM> analise) throws SVMExecutorException, WekaSVMException,
             ParametroSVMException {
 
         try {
@@ -93,7 +90,8 @@ public class SVMAnalisador {
             BufferedWriter resultado = new BufferedWriter(strWriter);
 
             //Cabeçalho
-            resultado.write("ativo;cost;gamma;tam_treino;evaluation;kernel;valor_real;valor_predito;diffMod;perc_acerto");
+            resultado.
+                    write("ativo;cost;gamma;tam_treino;evaluation;kernel;type;valor_real;valor_predito;diffMod;perc_acerto");
             resultado.newLine();
 
             Log.loga("Iniciando exportação do arquivo CSV", "SVM");
@@ -105,7 +103,7 @@ public class SVMAnalisador {
             resultado.flush();
             resultado.close();
         } catch (IOException ex) {
-            throw new SVMAnalisadorException("Não foi possível criar o arquivo de resultado");
+            throw new SVMExecutorException("Não foi possível criar o arquivo de resultado");
         }
 
     }
@@ -125,6 +123,8 @@ public class SVMAnalisador {
         linha.append(parametroSVM.getGridSearchEvaluationAlfa());
         linha.append(";");
         linha.append(parametroSVM.getKernelAlfa());
+        linha.append(";");
+        linha.append(parametroSVM.getTypeAlfa());
         linha.append(";");
         linha.append(EditaValores.edita2DecVirgula(resultadoSVM.getReal()));
         linha.append(";");

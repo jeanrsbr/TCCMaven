@@ -17,8 +17,8 @@ import java.io.IOException;
 import tccmaven.ARFF.PARAMETROS.IndicadoresException;
 import tccmaven.ARFF.PARAMETROS.NomeParametrosException;
 import tccmaven.SVM.ParametroSVMException;
-import tccmaven.SVM.SVMAnalisador;
-import tccmaven.SVM.SVMAnalisadorException;
+import tccmaven.SVM.SVMExecutor;
+import tccmaven.SVM.SVMExecutorException;
 import tccmaven.SVM.WekaSVMException;
 
 /**
@@ -80,11 +80,11 @@ public class Main {
                 String arquivoARFF = geraArquivoARFF.geraArquivo();
 
                 //Executar algoritmo SVM
-                SVMAnalisador sVMAnalisador = new SVMAnalisador(arquivoARFF);
+                SVMExecutor sVMAnalisador = new SVMExecutor(arquivoARFF);
                 sVMAnalisador.executaAnalise();
 
             }
-        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | IndicadoresException | NomeParametrosException | SVMAnalisadorException | WekaSVMException | ParametroSVMException ex) {
+        } catch (InsereParametrosException | BaixaArquivoException | ImportadorException | GeraArquivoARFFException | IndicadoresException | NomeParametrosException | SVMExecutorException | WekaSVMException | ParametroSVMException ex) {
             Log.loga(ex.getMessage());
             ex.printStackTrace();
         }

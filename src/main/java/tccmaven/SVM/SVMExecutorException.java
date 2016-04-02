@@ -8,16 +8,16 @@ package tccmaven.SVM;
  *
  * @author Jean-NoteI5
  */
-public class SVMAnalisadorException extends Exception {
+public class SVMExecutorException extends Exception {
 
-    public SVMAnalisadorException() {
+    public SVMExecutorException() {
     }
 
-    public SVMAnalisadorException(String message) {
+    public SVMExecutorException(String message) {
         super(message);
     }
 
-    public SVMAnalisadorException(String message, Throwable cause) {
+    public SVMExecutorException(String message, Throwable cause) {
         super(message, cause);
     }
 }

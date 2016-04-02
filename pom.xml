@@ -19,7 +19,7 @@
                     <source>1.8</source>
                     <target>1.8</target>
                     <debug>true</debug>
-                    <debuglevel>lines,vars,source</debuglevel> 
+                    <debuglevel>lines,vars,source</debuglevel>
                 </configuration>
             </plugin>
         </plugins>
@@ -40,17 +40,17 @@
             <artifactId>ta4j</artifactId>
             <version>0.7</version>
         </dependency>
-        <dependency>
+        <!--        <dependency>
             <groupId>com.datumbox</groupId>
             <artifactId>libsvm</artifactId>
             <version>3.21</version>
-        </dependency>  
-        <!--        <dependency>
+        </dependency>-->
+<!--        <dependency>
             <groupId>sample</groupId>
             <artifactId>com.sample</artifactId>
             <version>1.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/libsvm.jar</systemPath>
+            <systemPath>C:\Users\Hartz\Documents\NetBeansProjects\TCCMaven\src\main\resources\libsvm.jar</systemPath>
         </dependency>-->
         <dependency>
             <groupId>nz.ac.waikato.cms.weka</groupId>
