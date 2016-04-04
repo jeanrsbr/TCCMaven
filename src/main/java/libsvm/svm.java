@@ -890,6 +890,7 @@ final class Solver_NU extends Solver
 {
 	private SolutionInfo si;
 
+        @Override
 	void Solve(int l, QMatrix Q, double[] p, byte[] y,
 		   double[] alpha, double Cp, double Cn, double eps,
 		   SolutionInfo si, int shrinking)

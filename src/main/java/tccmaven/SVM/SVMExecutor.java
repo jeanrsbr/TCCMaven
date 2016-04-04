@@ -38,7 +38,7 @@ public class SVMExecutor {
 
             //Varre as opções de análise
             for (int i = 0; i < analise.size(); i++) {
-
+                
 //                //THREAD
 //                new Thread(new WekaSVM(nomArqARFF, analise.get(i), i)).start();
 
@@ -58,7 +58,7 @@ public class SVMExecutor {
                 }
             }
 
-
+            
 
             //Se processou todas as threads
             while (true) {

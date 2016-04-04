@@ -6,8 +6,6 @@ package tccmaven.MISC;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -42,4 +40,14 @@ public class Log {
             defOut.println("[" + String.format("%12s", titulo) + "]:" + mensagem);
         }
     }
+
+    public static PrintStream getDefOut() {
+        return defOut;
+    }
+
+    public static PrintStream getDefErr() {
+        return defErr;
+    }
+    
+    
 }

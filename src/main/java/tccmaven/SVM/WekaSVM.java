@@ -14,13 +14,11 @@ package tccmaven.SVM;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import tccmaven.MISC.Log;
 import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.GridSearch;
-import weka.core.Capabilities;
 import weka.core.Instances;
 import weka.core.SelectedTag;
 
@@ -170,7 +168,9 @@ public class WekaSVM implements Runnable {
         try {
             gridSearch.buildClassifier(train);
         } catch (Exception ex) {
-            Log.loga("Excecão Grid Search", "EXCECÃO");
+            Log.loga("Excessão no Grid Search");
+            ex.printStackTrace(Log.getDefOut());
+            Log.loga(ex.getMessage());
         }
 
         LibSVM bestClassifier = (LibSVM) gridSearch.getBestClassifier();
