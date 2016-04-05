@@ -66,8 +66,6 @@ public class WekaSVM implements Runnable {
                 getKernelAlfa() + " TYPE:" + parametrosSVM.getTypeAlfa() + " COST:" + svm.getCost() + " gamma:" +
                 svm.getGamma() + " TIME:" + (fim - ini), "SVM" + iD);
 
-        //cost = svm.getCost();
-        //gamma = svm.getGamma();
         ResultadoSVM resultadoSVM = new ResultadoSVM();
 
         double real = test.instance(0).classValue();
@@ -113,7 +111,7 @@ public class WekaSVM implements Runnable {
             svm.setLoss(0.1);
             svm.setNormalize(true);
             svm.setNu(0.5);
-            svm.setProbabilityEstimates(false);
+            svm.setProbabilityEstimates(true);
             svm.setShrinking(true);
 
             return svm;

@@ -39,8 +39,9 @@ public class SVMExecutor {
             //Varre as opções de análise
             for (int i = 0; i < analise.size(); i++) {
 
-
-
+                if (i == 5 || i == 13 || i == 21 || i == 29 || i == 37) {
+                    continue;
+                }
 
                 //THREAD
                 new Thread(new WekaSVM(nomArqARFF, analise.get(i), i)).start();
@@ -49,7 +50,6 @@ public class SVMExecutor {
 //                WekaSVM bambu = new WekaSVM(nomArqARFF, analise.get(i), i);
 //                bambu.perfomanceAnalysis();
 ////
-
                 //Se processou todas as threads
                 while (true) {
                     if (Thread.activeCount() != numThreads + 1) {
@@ -60,8 +60,6 @@ public class SVMExecutor {
                     }
                 }
             }
-
-
 
             //Se processou todas as threads
             while (true) {
@@ -100,8 +98,11 @@ public class SVMExecutor {
             Log.loga("Iniciando exportação do arquivo CSV", "SVM");
             //Varre as opções de análise
             for (int i = 0; i < analise.size(); i++) {
-                resultado.write(montaLinha(analise.get(i), ManipuladorResultadoSVM.getInstance().getResultado(i)));
-                resultado.newLine();
+                //Se possui resultado na ocorrência
+                if (ManipuladorResultadoSVM.getInstance().getResultado(i) != null) {
+                    resultado.write(montaLinha(analise.get(i), ManipuladorResultadoSVM.getInstance().getResultado(i)));
+                    resultado.newLine();
+                }
             }
             resultado.flush();
             resultado.close();

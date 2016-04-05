@@ -2,9 +2,6 @@ package libsvm;
 public class svm_parameter implements Cloneable,java.io.Serializable
 {
 	/* svm_type */
-	public static final int C_SVC = 0;
-	public static final int NU_SVC = 1;
-	public static final int ONE_CLASS = 2;
 	public static final int EPSILON_SVR = 3;
 	public static final int NU_SVR = 4;
 
@@ -13,7 +10,6 @@ public class svm_parameter implements Cloneable,java.io.Serializable
 	public static final int POLY = 1;
 	public static final int RBF = 2;
 	public static final int SIGMOID = 3;
-	public static final int PRECOMPUTED = 4;
 
 	public int svm_type;
 	public int kernel_type;
@@ -33,12 +29,12 @@ public class svm_parameter implements Cloneable,java.io.Serializable
 	public int shrinking;	// use the shrinking heuristics
 	public int probability; // do probability estimates
 
-	public Object clone() 
+	public Object clone()
 	{
-		try 
+		try
 		{
 			return super.clone();
-		} catch (CloneNotSupportedException e) 
+		} catch (CloneNotSupportedException e)
 		{
 			return null;
 		}
