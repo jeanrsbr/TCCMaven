@@ -41,10 +41,14 @@ public class WekaSVM implements Runnable {
     //Realiza o teste de performance do modelo construído
     public void perfomanceAnalysis() throws WekaSVMException, ParametroSVMException {
 
+
         //Se o SET de treino for maior que o SET disponível
         if ((parametrosSVM.getTamanhoDoConjunto() + parametrosSVM.getDiaInicial()) > dataSet.numInstances()) {
             throw new WekaSVMException("Set de treino muito grande");
         }
+
+
+        long ini = System.currentTimeMillis();
 
         Instances train = new Instances(dataSet, dataSet.numInstances() - parametrosSVM.getDiaInicial() - parametrosSVM.
                 getTamanhoDoConjunto(), parametrosSVM.getTamanhoDoConjunto());
@@ -57,9 +61,10 @@ public class WekaSVM implements Runnable {
         svm = GridSearch(svm, train);
         constroiClassificador(svm, train);
 
+       long fim  = System.currentTimeMillis();
         Log.loga("EVALUATION:" + parametrosSVM.getGridSearchEvaluationAlfa() + " KERNEL:" + parametrosSVM.
                 getKernelAlfa() + " TYPE:" + parametrosSVM.getTypeAlfa() + " COST:" + svm.getCost() + " gamma:" +
-                svm.getGamma(), "SVM");
+                svm.getGamma() + " TIME:" + (fim - ini), "SVM" + iD);
 
         //cost = svm.getCost();
         //gamma = svm.getGamma();

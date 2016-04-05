@@ -56,14 +56,14 @@ public class ManipuladorParametroSVM {
 
     private void populaKernel(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation){
         populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_RBF);
-        //populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_SIGMOID);
-        //populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_POLYNOMIAL);
+        populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_SIGMOID);
+        populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_POLYNOMIAL);
         populaTipo(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, LibSVM.KERNELTYPE_LINEAR);
     }
 
     private void populaTipo(int diaInicial, int tamanhoDoConjunto, int gridSearchEvaluation, int kernel){
         gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel, LibSVM.SVMTYPE_EPSILON_SVR);
-        //gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel, LibSVM.SVMTYPE_NU_SVR);
+        gravaParametro(diaInicial, tamanhoDoConjunto, gridSearchEvaluation, kernel, LibSVM.SVMTYPE_NU_SVR);
 
     }
 
