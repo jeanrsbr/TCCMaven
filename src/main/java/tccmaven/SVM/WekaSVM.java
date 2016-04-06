@@ -99,7 +99,7 @@ public class WekaSVM implements Runnable {
 
             LibSVM svm = new LibSVM();
             svm.setSVMType(new SelectedTag(parametrosSVM.getType(), LibSVM.TAGS_SVMTYPE));
-            svm.setCacheSize(500);
+            svm.setCacheSize(1000);
             svm.setCoef0(0.0);
             svm.setCost(1.0);
             svm.setDebug(false);

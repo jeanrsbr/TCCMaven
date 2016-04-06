@@ -39,9 +39,9 @@ public class SVMExecutor {
             //Varre as opções de análise
             for (int i = 0; i < analise.size(); i++) {
 
-                if (i == 5 || i == 13 || i == 21 || i == 29 || i == 37) {
-                    continue;
-                }
+//                if (i == 5 || i == 13 || i == 21 || i == 29 || i == 37) {
+//                    continue;
+//                }
 
                 //THREAD
                 new Thread(new WekaSVM(nomArqARFF, analise.get(i), i)).start();

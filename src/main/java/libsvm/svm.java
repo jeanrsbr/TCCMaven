@@ -308,24 +308,6 @@ abstract class Kernel extends QMatrix {
     }
 }
 
-// An SMO algorithm in Fan et al., JMLR 6(2005), p. 1889--1918
-// Solves:
-//
-//	min 0.5(\alpha^T Q \alpha) + p^T \alpha
-//
-//		y^T \alpha = \delta
-//		y_i = +1 or -1
-//		0 <= alpha_i <= Cp for y_i = 1
-//		0 <= alpha_i <= Cn for y_i = -1
-//
-// Given:
-//
-//	Q, p, y, Cp, Cn, and an initial feasible point \alpha
-//	l is the size of vectors and matrices
-//	eps is the stopping tolerance
-//
-// solution will be put in \alpha, objective value will be put in obj
-//
 class Solver {
 
     int active_size;
@@ -1151,7 +1133,6 @@ final class Solver_NU extends Solver {
 //
 // Q matrices for various formulations
 //
-
 //TALVEZ
 class SVC_Q extends Kernel {
 
@@ -1240,7 +1221,6 @@ class ONE_CLASS_Q extends Kernel {
         } while (false);
     }
 }
-
 
 //OK
 class SVR_Q extends Kernel {
@@ -1355,8 +1335,7 @@ public class svm {
     }
 
     //OK
-    private static void solve_nu_svr(svm_problem prob, svm_parameter param,
-            double[] alpha, Solver.SolutionInfo si) {
+    private static void solve_nu_svr(svm_problem prob, svm_parameter param, double[] alpha, Solver.SolutionInfo si) {
         int l = prob.l;
         double C = param.C;
         double[] alpha2 = new double[2 * l];
@@ -1377,8 +1356,7 @@ public class svm {
         }
 
         Solver_NU s = new Solver_NU();
-        s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y,
-                alpha2, C, C, param.eps, si, param.shrinking);
+        s.Solve(2 * l, new SVR_Q(prob, param), linear_term, y, alpha2, C, C, param.eps, si, param.shrinking);
 
         for (i = 0; i < l; i++) {
             alpha[i] = alpha2[i] - alpha2[i + l];
@@ -1396,9 +1374,7 @@ public class svm {
     };
 
     //OK
-    static decision_function svm_train_one(
-            svm_problem prob, svm_parameter param,
-            double Cp, double Cn) {
+    static decision_function svm_train_one(svm_problem prob, svm_parameter param) {
         double[] alpha = new double[prob.l];
         Solver.SolutionInfo si = new Solver.SolutionInfo();
         switch (param.svm_type) {
@@ -1408,24 +1384,6 @@ public class svm {
             case svm_parameter.NU_SVR:
                 solve_nu_svr(prob, param, alpha, si);
                 break;
-        }
-
-        // output SVs
-        int nSV = 0;
-        int nBSV = 0;
-        for (int i = 0; i < prob.l; i++) {
-            if (Math.abs(alpha[i]) > 0) {
-                ++nSV;
-                if (prob.y[i] > 0) {
-                    if (Math.abs(alpha[i]) >= si.upper_bound_p) {
-                        ++nBSV;
-                    }
-                } else {
-                    if (Math.abs(alpha[i]) >= si.upper_bound_n) {
-                        ++nBSV;
-                    }
-                }
-            }
         }
 
         decision_function f = new decision_function();
@@ -1485,7 +1443,7 @@ public class svm {
             model.probA[0] = svm_svr_probability(prob, param);
         }
 
-        decision_function f = svm_train_one(prob, param, 0, 0);
+        decision_function f = svm_train_one(prob, param);
         model.rho = new double[1];
         model.rho[0] = f.rho;
 
@@ -1622,7 +1580,6 @@ public class svm {
 
     //OK
     public static double svm_predict(svm_model model, svm_node[] x) {
-        int nr_class = model.nr_class;
         double[] dec_values;
         dec_values = new double[1];
         double pred_result = svm_predict_values(model, x, dec_values);
